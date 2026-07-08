@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.env
+*.log
+npm-debug.log*
+coverage
+.nyc_output
+.eslintcache
+uploads

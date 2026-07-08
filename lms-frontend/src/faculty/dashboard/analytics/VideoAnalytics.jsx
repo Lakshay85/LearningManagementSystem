@@ -1,0 +1,155 @@
+import React, { useState, useEffect } from "react";
+import { Video, Clock, Calendar } from "lucide-react";
+import {
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+} from "chart.js";
+import { Doughnut, Bar } from "react-chartjs-2";
+import facultyApi from "../../../utils/facultyApi";
+
+ChartJS.register(
+    ArcElement,
+    Tooltip,
+    Legend,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title
+);
+
+const VideoAnalytics = () => {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const response = await facultyApi.getVideoAnalyticsDetails();
+            setData(response.data);
+        } catch (error) {
+            console.error("Failed to fetch video analytics:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        });
+    };
+
+    const formatTime = (dateString) => {
+        return new Date(dateString).toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
+    // Process data for charts
+    const getChartData = () => {
+        if (!data) return null;
+
+        // Doughnut Data (Status)
+        const statusData = {
+            labels: ["Published", "Draft"],
+            datasets: [
+                {
+                    data: [data.publishedVideos.length, data.draftVideos.length],
+                    backgroundColor: ["#10b981", "#f59e0b"],
+                    borderColor: ["#059669", "#d97706"],
+                    borderWidth: 1,
+                },
+            ],
+        };
+
+        // Bar Data (Monthly Uploads)
+        const allVideos = [...data.publishedVideos, ...data.draftVideos];
+        const months = {};
+        const today = new Date();
+
+        // Initialize last 6 months
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const monthYear = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+            months[monthYear] = 0;
+        }
+
+        allVideos.forEach(video => {
+            const d = new Date(video.createdAt);
+            const monthYear = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+            if (months.hasOwnProperty(monthYear)) {
+                months[monthYear]++;
+            }
+        });
+
+        const timelineData = {
+            labels: Object.keys(months),
+            datasets: [
+                {
+                    label: "Videos Uploaded",
+                    data: Object.values(months),
+                    backgroundColor: "#6366f1",
+                    borderRadius: 4,
+                }
+            ]
+        };
+
+        return { statusData, timelineData };
+    };
+
+    if (loading) {
+        return <div className="p-8 text-center text-gray-500">Loading video analytics...</div>;
+    }
+
+    if (!data) return null;
+
+    const chartData = getChartData();
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <Video className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-semibold text-gray-900">Video Analytics</h2>
+                        <p className="text-sm text-gray-500">Total Videos: {data.totalVideos}</p>
+                    </div>
+                </div>
+
+                {/* Charts Section */}
+                <div className="grid md:grid-cols-2 gap-8 mb-8">
+                    <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm flex flex-col items-center">
+                        <h3 className="text-sm font-medium text-gray-700 mb-4">Content Status</h3>
+                        <div className="w-full max-w-[250px]">
+                            <Doughnut data={chartData.statusData} options={{ maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }} />
+                        </div>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+                        <h3 className="text-sm font-medium text-gray-700 mb-4">Upload Trends (Last 6 Months)</h3>
+                        <div className="w-full h-[250px]">
+                            <Bar data={chartData.timelineData} options={{ maintainAspectRatio: false, responsive: true }} />
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    );
+};
+
+export default VideoAnalytics;

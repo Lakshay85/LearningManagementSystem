@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import FacultySidebar from "./FacultySidebar";
 import FacultyTopbar from "./FacultyTopbar";
@@ -14,12 +14,29 @@ import MyStudents from "./students/MyStudents";
 import Analytics from "./analytics/Analytics";
 import Settings from "./settings/Settings";
 import NotificationSection from "../../components/NotificationSection";
+import { applyThemeFonts } from "./settings/StyleSettings";
 
 function FacultyDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [editingCourse, setEditingCourse] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem("faculty-theme") || "default");
+
+  useEffect(() => {
+    applyThemeFonts(theme);
+
+    const handleThemeChange = () => {
+      const newTheme = localStorage.getItem("faculty-theme") || "default";
+      setTheme(newTheme);
+      applyThemeFonts(newTheme);
+    };
+
+    window.addEventListener("faculty-theme-change", handleThemeChange);
+    return () => {
+      window.removeEventListener("faculty-theme-change", handleThemeChange);
+    };
+  }, [theme]);
 
   // Handle tab change with logout support
   const handleTabChange = (tab) => {
@@ -70,7 +87,7 @@ function FacultyDashboard() {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className={`flex h-screen theme-active theme-${theme}`}>
       <FacultySidebar activeTab={activeTab} setActiveTab={handleTabChange} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <FacultyTopbar

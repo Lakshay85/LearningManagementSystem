@@ -1,0 +1,412 @@
+/* themes.css */
+
+/* 1. Default Theme */
+.theme-default {
+  --theme-bg: #f9fafb;
+  --theme-sidebar-bg: #f9fafb;
+  --theme-topbar-bg: #ffffff;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: 1px solid #e5e7eb;
+  --theme-card-radius: 0.75rem;
+  --theme-card-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --theme-card-backdrop: none;
+  --theme-text-primary: #111827;
+  --theme-text-secondary: #6b7280;
+  --theme-accent: #10b981;
+  --theme-accent-light: #ecfdf5;
+  --theme-accent-hover: #059669;
+  --theme-font-heading: 'Inter', sans-serif;
+  --theme-font-body: 'Inter', sans-serif;
+}
+
+/* 2. Glassmorphism */
+.theme-glassmorphism {
+  --theme-bg: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  --theme-sidebar-bg: rgba(15, 23, 42, 0.45);
+  --theme-topbar-bg: rgba(15, 23, 42, 0.35);
+  --theme-card-bg: rgba(255, 255, 255, 0.05);
+  --theme-card-border: 1px solid rgba(255, 255, 255, 0.09);
+  --theme-card-radius: 1.25rem;
+  --theme-card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --theme-card-backdrop: blur(16px);
+  --theme-text-primary: #f8fafc;
+  --theme-text-secondary: #94a3b8;
+  --theme-accent: #6366f1;
+  --theme-accent-light: rgba(99, 102, 241, 0.15);
+  --theme-accent-hover: #4f46e5;
+  --theme-font-heading: 'Outfit', sans-serif;
+  --theme-font-body: 'Inter', sans-serif;
+}
+
+/* 3. Claymorphism */
+.theme-claymorphism {
+  --theme-bg: #f3e8ff;
+  --theme-sidebar-bg: #ffffff;
+  --theme-topbar-bg: #ffffff;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: 3px solid #2e1065;
+  --theme-card-radius: 1.5rem;
+  --theme-card-shadow: 6px 6px 0px #2e1065, inset -4px -4px 12px rgba(147, 51, 234, 0.15), inset 4px 4px 12px rgba(255, 255, 255, 0.9);
+  --theme-card-backdrop: none;
+  --theme-text-primary: #2e1065;
+  --theme-text-secondary: #6b21a8;
+  --theme-accent: #a855f7;
+  --theme-accent-light: #f3e8ff;
+  --theme-accent-hover: #9333ea;
+  --theme-font-heading: 'Fredoka', sans-serif;
+  --theme-font-body: 'Nunito', sans-serif;
+}
+
+/* 4. Minimalism */
+.theme-minimalism {
+  --theme-bg: #ffffff;
+  --theme-sidebar-bg: #ffffff;
+  --theme-topbar-bg: #ffffff;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: 1px solid #111827;
+  --theme-card-radius: 0px;
+  --theme-card-shadow: none;
+  --theme-card-backdrop: none;
+  --theme-text-primary: #111827;
+  --theme-text-secondary: #4b5563;
+  --theme-accent: #000000;
+  --theme-accent-light: #f3f4f6;
+  --theme-accent-hover: #374151;
+  --theme-font-heading: 'Space Grotesk', sans-serif;
+  --theme-font-body: 'Inter', sans-serif;
+}
+
+/* 5. Bento Grid */
+.theme-bentogrid {
+  --theme-bg: #0b0f19;
+  --theme-sidebar-bg: #111827;
+  --theme-topbar-bg: #111827;
+  --theme-card-bg: #1f2937;
+  --theme-card-border: 1px solid #374151;
+  --theme-card-radius: 1rem;
+  --theme-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --theme-card-backdrop: none;
+  --theme-text-primary: #f9fafb;
+  --theme-text-secondary: #9ca3af;
+  --theme-accent: #3b82f6;
+  --theme-accent-light: rgba(59, 130, 246, 0.15);
+  --theme-accent-hover: #2563eb;
+  --theme-font-heading: 'Plus Jakarta Sans', sans-serif;
+  --theme-font-body: 'DM Sans', sans-serif;
+}
+
+/* 6. Neumorphism */
+.theme-neumorphism {
+  --theme-bg: #e0e5ec;
+  --theme-sidebar-bg: #e0e5ec;
+  --theme-topbar-bg: #e0e5ec;
+  --theme-card-bg: #e0e5ec;
+  --theme-card-border: none;
+  --theme-card-radius: 1.5rem;
+  --theme-card-shadow: 6px 6px 16px rgba(163, 177, 198, 0.55), -6px -6px 16px rgba(255, 255, 255, 0.85);
+  --theme-card-backdrop: none;
+  --theme-text-primary: #3d4852;
+  --theme-text-secondary: #6b7280;
+  --theme-accent: #6c63ff;
+  --theme-accent-light: rgba(108, 99, 255, 0.1);
+  --theme-accent-hover: #5b54d6;
+  --theme-font-heading: 'Poppins', sans-serif;
+  --theme-font-body: 'Open Sans', sans-serif;
+}
+
+/* 7. Retro Brutalism */
+.theme-brutalism {
+  --theme-bg: #fef08a;
+  --theme-sidebar-bg: #ffffff;
+  --theme-topbar-bg: #ffffff;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: 3px solid #000000;
+  --theme-card-radius: 0px;
+  --theme-card-shadow: 5px 5px 0px #000000;
+  --theme-card-backdrop: none;
+  --theme-text-primary: #000000;
+  --theme-text-secondary: #000000;
+  --theme-accent: #ec4899;
+  --theme-accent-light: #fdf2f8;
+  --theme-accent-hover: #db2777;
+  --theme-font-heading: 'Space Mono', monospace;
+  --theme-font-body: 'JetBrains Mono', monospace;
+}
+
+/* 8. Aurora Cosmic */
+.theme-aurora {
+  --theme-bg: #0b0a1a;
+  --theme-sidebar-bg: #0d0c22;
+  --theme-topbar-bg: #0d0c22;
+  --theme-card-bg: #141233;
+  --theme-card-border: 1px solid rgba(16, 185, 129, 0.35);
+  --theme-card-radius: 1rem;
+  --theme-card-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  --theme-card-backdrop: none;
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #94a3b8;
+  --theme-accent: #10b981;
+  --theme-accent-light: rgba(16, 185, 129, 0.15);
+  --theme-accent-hover: #059669;
+  --theme-font-heading: 'Syne', sans-serif;
+  --theme-font-body: 'Manrope', sans-serif;
+}
+
+/* 9. Classic Editorial */
+.theme-editorial {
+  --theme-bg: #fdfbf7;
+  --theme-sidebar-bg: #f6f3eb;
+  --theme-topbar-bg: #fdfbf7;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: 1px solid #e5e2dc;
+  --theme-card-radius: 0.25rem;
+  --theme-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  --theme-card-backdrop: none;
+  --theme-text-primary: #1c1917;
+  --theme-text-secondary: #68645e;
+  --theme-accent: #15803d;
+  --theme-accent-light: #f0fdf4;
+  --theme-accent-hover: #166534;
+  --theme-font-heading: 'Playfair Display', serif;
+  --theme-font-body: 'Inter', sans-serif;
+}
+
+/* 10. Dark Cyberpunk */
+.theme-cyberpunk {
+  --theme-bg: #0d0e12;
+  --theme-sidebar-bg: #12131a;
+  --theme-topbar-bg: #12131a;
+  --theme-card-bg: #1a1c24;
+  --theme-card-border: 1px solid #ff007f;
+  --theme-card-radius: 0.5rem;
+  --theme-card-shadow: 0 0 15px rgba(255, 0, 127, 0.25);
+  --theme-card-backdrop: none;
+  --theme-text-primary: #00ffff;
+  --theme-text-secondary: #ff007f;
+  --theme-accent: #00ffff;
+  --theme-accent-light: rgba(0, 255, 255, 0.1);
+  --theme-accent-hover: #00cccc;
+  --theme-font-heading: 'Orbitron', sans-serif;
+  --theme-font-body: 'Fira Code', monospace;
+}
+
+/* 11. Earth Calm */
+.theme-organic {
+  --theme-bg: #f5efeb;
+  --theme-sidebar-bg: #eae3dd;
+  --theme-topbar-bg: #f5efeb;
+  --theme-card-bg: #ffffff;
+  --theme-card-border: 1px solid #ded5cc;
+  --theme-card-radius: 1.25rem;
+  --theme-card-shadow: 0 4px 12px rgba(45, 30, 20, 0.05);
+  --theme-card-backdrop: none;
+  --theme-text-primary: #2d1e14;
+  --theme-text-secondary: #705b4e;
+  --theme-accent: #78716c;
+  --theme-accent-light: #f5f5f4;
+  --theme-accent-hover: #57534e;
+  --theme-font-heading: 'Lora', serif;
+  --theme-font-body: 'Raleway', sans-serif;
+}
+
+/* Apply variable overrides */
+.theme-active {
+  background: var(--theme-bg) !important;
+  color: var(--theme-text-primary) !important;
+  font-family: var(--theme-font-body) !important;
+  min-height: 100vh;
+}
+
+.theme-active h1,
+.theme-active h2,
+.theme-active h3,
+.theme-active h4,
+.theme-active h5,
+.theme-active h6,
+.theme-active .theme-heading {
+  font-family: var(--theme-font-heading) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+/* General bg and wrapper overrides */
+.theme-active .bg-gray-50 {
+  background: var(--theme-bg) !important;
+}
+
+/* Sidebars and side panels */
+.theme-active div[class*="w-72"].h-screen,
+.theme-active div[class*="w-20"].h-screen,
+.theme-active aside {
+  background: var(--theme-sidebar-bg) !important;
+  border-right: var(--theme-card-border) !important;
+}
+
+/* Top navigations */
+.theme-active header,
+.theme-active .flex-1.flex.flex-col > div.bg-white.border-b {
+  background: var(--theme-topbar-bg) !important;
+  border-bottom: var(--theme-card-border) !important;
+  backdrop-filter: var(--theme-card-backdrop) !important;
+}
+
+/* Border overrides */
+.theme-active .border-r,
+.theme-active .border-b,
+.theme-active .border-t,
+.theme-active .border-l,
+.theme-active .border-gray-100,
+.theme-active .border-gray-200,
+.theme-active .border-gray-300 {
+  border-color: var(--theme-card-border) !important;
+}
+
+/* Card overrides */
+.theme-active .bg-white.rounded-xl,
+.theme-active .bg-white.rounded-2xl,
+.theme-active .bg-white.rounded-lg,
+.theme-active .bg-white.rounded-md,
+.theme-active .bg-white.shadow-sm {
+  background: var(--theme-card-bg) !important;
+  border: var(--theme-card-border) !important;
+  border-radius: var(--theme-card-radius) !important;
+  box-shadow: var(--theme-card-shadow) !important;
+  backdrop-filter: var(--theme-card-backdrop) !important;
+}
+
+/* Text coloring overrides */
+.theme-active .text-gray-900,
+.theme-active .text-gray-800,
+.theme-active .text-slate-900,
+.theme-active .text-stone-900 {
+  color: var(--theme-text-primary) !important;
+}
+
+.theme-active .text-gray-500,
+.theme-active .text-gray-600,
+.theme-active .text-gray-400,
+.theme-active .text-slate-500,
+.theme-active .text-slate-600 {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* Active navigation item / selected badge styling */
+.theme-active .bg-emerald-50 {
+  background-color: var(--theme-accent-light) !important;
+  color: var(--theme-accent) !important;
+}
+
+.theme-active .text-emerald-700,
+.theme-active .text-emerald-600 {
+  color: var(--theme-accent) !important;
+}
+
+.theme-active .bg-emerald-600 {
+  background-color: var(--theme-accent) !important;
+  color: #ffffff !important;
+}
+
+.theme-active .bg-emerald-600:hover,
+.theme-active .hover\:bg-emerald-700:hover {
+  background-color: var(--theme-accent-hover) !important;
+}
+
+.theme-active .hover\:text-emerald-700:hover {
+  color: var(--theme-accent-hover) !important;
+}
+
+/* Forms input tags override */
+.theme-active input[type="text"],
+.theme-active input[type="email"],
+.theme-active input[type="password"],
+.theme-active textarea,
+.theme-active select {
+  background: var(--theme-card-bg) !important;
+  border: var(--theme-card-border) !important;
+  border-radius: calc(var(--theme-card-radius) * 0.7) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.theme-active input::placeholder,
+.theme-active textarea::placeholder {
+  color: var(--theme-text-secondary) !important;
+  opacity: 0.6;
+}
+
+/* Ambient glow graphics for Glassmorphism */
+.theme-glassmorphism {
+  position: relative;
+  overflow: hidden;
+}
+.theme-glassmorphism::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+.theme-glassmorphism::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  right: -20%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ambient background glow graphics for Aurora */
+.theme-aurora {
+  position: relative;
+}
+.theme-aurora::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -30%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Neumorphism specifics - inset shadow states for inputs */
+.theme-neumorphism input[type="text"],
+.theme-neumorphism input[type="email"],
+.theme-neumorphism input[type="password"],
+.theme-neumorphism textarea,
+.theme-neumorphism select {
+  box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.8) !important;
+  border: none !important;
+}
+
+.theme-neumorphism .w-14.h-14,
+.theme-neumorphism .w-10.h-10,
+.theme-neumorphism .w-12.h-12 {
+  box-shadow: 3px 3px 6px rgba(163, 177, 198, 0.6), -3px -3px 6px rgba(255, 255, 255, 0.85) !important;
+  background-color: #e0e5ec !important;
+  color: var(--theme-accent) !important;
+}
+
+.theme-neumorphism .w-8.h-8.text-white,
+.theme-neumorphism .w-5.h-5.text-white,
+.theme-neumorphism .w-6.h-6.text-white {
+  color: var(--theme-accent) !important;
+}
+
+/* Playful claymorphism buttons bounce and cards */
+.theme-claymorphism button:active,
+.theme-claymorphism a:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #2e1065 !important;
+}
+.theme-claymorphism .bg-emerald-600 {
+  border: 2px solid #2e1065 !important;
+  box-shadow: 3px 3px 0px #2e1065 !important;
+}

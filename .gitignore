@@ -73,3 +73,6 @@ uploads/
 
 lmsrag/.git_backup_temp/
 lmsrag/.git_disabled/
+
+# Agent Customizations
+.agents/

@@ -2,7 +2,8 @@ import { useState } from "react";
 import ProfileSettings from "./ProfileSettings";
 import SecuritySettings from "./SecuritySettings";
 import AccountSettings from "./AccountSettings";
-import { User, Lock, Shield } from "lucide-react";
+import StyleSettings from "./StyleSettings";
+import { User, Lock, Shield, Palette } from "lucide-react";
 
 const Settings = () => {
     const [activeTab, setActiveTab] = useState("profile");
@@ -11,6 +12,7 @@ const Settings = () => {
         { id: "profile", label: "Profile", icon: User },
         { id: "security", label: "Security", icon: Lock },
         { id: "account", label: "Account", icon: Shield },
+        { id: "style", label: "Theme & Style", icon: Palette },
     ];
 
     const renderContent = () => {
@@ -21,6 +23,8 @@ const Settings = () => {
                 return <SecuritySettings />;
             case "account":
                 return <AccountSettings />;
+            case "style":
+                return <StyleSettings />;
             default:
                 return <ProfileSettings />;
         }

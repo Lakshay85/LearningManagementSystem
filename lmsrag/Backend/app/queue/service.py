@@ -2,10 +2,8 @@ import json
 import uuid
 import time
 import os
+import asyncio
 from typing import List, Dict, Any, Optional, Callable
-import redis.asyncio as aioredis
-from arq import create_pool
-from arq.connections import RedisSettings
 
 from app.config import settings
 
@@ -39,44 +37,20 @@ STAGE_PROGRESS = {
 
 class IngestionQueueService:
     def __init__(self):
-        self.redis: Optional[aioredis.Redis] = None
-        self.arq_pool = None
+        self._status_store: Dict[str, dict] = {}
         self.is_enabled = False
-        self.processor: Optional[Callable] = None
-        self.queue_name = 'arq:queue'
+        self.queue_name = 'in_memory'
 
     async def connect(self):
-        redis_url = settings.REDIS_URL
-        if not redis_url:
-            print("⚠️ REDIS_URL not configured, async ingestion disabled")
-            return
-
-        try:
-            self.redis = aioredis.from_url(redis_url, decode_responses=True)
-            await self.redis.ping()
-            
-            # Setup arq pool
-            redis_settings = RedisSettings.from_dsn(redis_url)
-            self.arq_pool = await create_pool(redis_settings)
-            
-            self.is_enabled = True
-            print("✅ Ingestion Queue initialized (arq pool)")
-        except Exception as e:
-            print(f"Failed to initialize ingestion queue: {str(e)}")
+        self.is_enabled = True
+        print("✅ Ingestion Queue initialized (In-memory status store)")
 
     async def disconnect(self):
-        if self.arq_pool:
-            await self.arq_pool.close()
-        if self.redis:
-            await self.redis.close()
-
-    def register_processor(self, processor: Callable):
-        self.processor = processor
-        print("📦 Ingestion worker processor registered")
+        pass
 
     async def add_to_queue(self, data: dict) -> str:
-        if not self.is_enabled or not self.arq_pool:
-            raise Exception("Async ingestion not available. Process synchronously instead.")
+        if not self.is_enabled:
+            raise Exception("Async ingestion not available.")
 
         task_id = str(uuid.uuid4())
         
@@ -92,29 +66,94 @@ class IngestionQueueService:
         }
         await self.update_progress(task_id, progress)
 
-        # Enqueue job to arq
-        # Job payload will contain task_id
-        await self.arq_pool.enqueue_job("ingest_document_job", {**data, "taskId": task_id})
+        # Run background ingestion task in-process
+        asyncio.create_task(self._run_ingestion(task_id, data))
         
         print(f"📥 Added ingestion job: {task_id} ({data.get('fileName')})")
         return task_id
 
-    async def get_status(self, task_id: str) -> Optional[dict]:
-        if not self.redis:
-            return None
+    async def _run_ingestion(self, task_id: str, job_data: dict):
+        print(f"Executing in-process job for task {task_id}: {job_data.get('fileName')}")
 
-        val = await self.redis.get(f"ingestion:{task_id}")
-        if not val:
-            return None
-        return json.loads(val)
+        from app.database.service import db_service
+        from app.rag.service import rag_service, IngestFileDto
+
+        # Ensure database is connected
+        await db_service.connect()
+
+        async def update_progress(stage: str, message: str):
+            prog = STAGE_PROGRESS.get(stage, 0)
+            await self.update_progress(task_id, {
+                "status": IngestionStatus.PROCESSING,
+                "stage": stage,
+                "progress": prog,
+                "message": message
+            })
+
+        file_path = job_data.get("filePath")
+        try:
+            if not file_path or not os.path.exists(file_path):
+                raise ValueError(f"File not found on disk: {file_path}")
+
+            doc_type = job_data.get("type")
+            file_name = job_data.get("fileName")
+            course_id = job_data.get("courseId")
+            metadata = job_data.get("metadata") or {}
+
+            await update_progress(IngestionStage.PARSING, "Parsing document...")
+
+            # Read file bytes
+            with open(file_path, "rb") as f:
+                file_bytes = f.read()
+
+            dto = IngestFileDto(
+                fileBuffer=file_bytes,
+                fileName=file_name,
+                docType=doc_type,
+                metadata={**metadata, "courseId": course_id}
+            )
+
+            # Ingest using RAG service
+            result = await rag_service.ingest_file(dto)
+
+            # Mark as complete
+            await self.update_progress(task_id, {
+                "status": IngestionStatus.COMPLETED,
+                "stage": IngestionStage.COMPLETE,
+                "progress": 100,
+                "message": "Document ingested successfully",
+                "result": result
+            })
+
+            # Clean up temp file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+            return result
+
+        except Exception as e:
+            print(f"❌ In-process job failed for task {task_id}: {str(e)}")
+            await self.update_progress(task_id, {
+                "status": IngestionStatus.FAILED,
+                "stage": IngestionStage.FAILED,
+                "progress": -1,
+                "message": "Processing failed",
+                "error": str(e)
+            })
+            # Clean up temp file on failure
+            if file_path and os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except Exception:
+                    pass
+
+    async def get_status(self, task_id: str) -> Optional[dict]:
+        return self._status_store.get(task_id)
 
     def is_queue_enabled(self) -> bool:
         return self.is_enabled
 
     async def update_progress(self, task_id: str, progress_data: dict) -> None:
-        if not self.redis:
-            return
-
         existing = await self.get_status(task_id) or {}
         updated = {
             **existing,
@@ -125,16 +164,11 @@ class IngestionQueueService:
         if "createdAt" not in updated:
             updated["createdAt"] = time.time()
 
-        # TTL = 24 hours
-        await self.redis.setex(f"ingestion:{task_id}", 86400, json.dumps(updated))
+        self._status_store[task_id] = updated
 
     async def get_queue_stats(self) -> dict:
-        if not self.redis:
-            return {"waiting": 0, "active": 0, "completed": 0, "failed": 0}
-        # In arq/redis, we can query length of queue keys or similar
-        # For simplicity, return mock/approximated stats
         return {
-            "waiting": await self.redis.llen(self.queue_name) if await self.redis.exists(self.queue_name) else 0,
+            "waiting": 0,
             "active": 0,
             "completed": 0,
             "failed": 0

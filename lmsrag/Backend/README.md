@@ -5,7 +5,7 @@ This is the Retrieval-Augmented Generation (RAG) microservice for the Learning M
 ## Features
 
 - **Document Ingestion**: Supports parsing, chunking, and embedding PDFs, text documents, and video transcripts.
-- **Asynchronous Processing**: Ingestion jobs are processed out-of-band by an `arq` background worker using Redis as the job store.
+- **Asynchronous Processing**: Ingestion jobs are processed asynchronously in-process using background tasks and tracked via an in-memory status store.
 - **Structure-Aware Processing**: Uses a custom document structure pipeline that parses documents into structural elements before chunking.
 - **pgvector Vector Store**: Leverages PostgreSQL `pgvector` for HNSW/IVF similarity searches.
 - **Dynamic Intent Classifier**: Classifies incoming queries (greeting, gratitude, farewell, out-of-scope, question, follow-up) using LLMs to direct the processing pipeline.
@@ -19,7 +19,7 @@ This is the Retrieval-Augmented Generation (RAG) microservice for the Learning M
 - **Embeddings**: default NVIDIA `baai/bge-m3` or Gemini/OpenAI embedding APIs
 - **Orchestration**: LangChain (Python)
 - **Database**: PostgreSQL with `pgvector` extension
-- **Background Worker**: `arq` (async queue) & Redis
+- **Background Processing**: In-process background tasks
 - **Testing**: pytest
 
 ---
@@ -51,7 +51,7 @@ lmsrag/Backend/
 
 ### 1. Prerequisites
 - Python 3.12+
-- Redis (running on port `6379`)
+
 - PostgreSQL with pgvector (running on port `5434`)
 - Groq Cloud API Key
 - NVIDIA/Gemini/OpenAI API key (for embeddings)
@@ -61,7 +61,7 @@ Create a `.env` file in `lmsrag/Backend/` based on `.env.example`:
 ```env
 PORT=3001
 DATABASE_URL=postgresql://postgres:postgres@localhost:5434/lmsrag
-REDIS_URL=redis://localhost:6379
+
 GROQ_API_KEY=your-groq-api-key
 NVIDIA_API_KEY=your-nvidia-api-key
 EMBEDDING_PROVIDER=nvidia
@@ -69,7 +69,7 @@ EMBEDDING_MODEL=baai/bge-m3
 ```
 
 ### 3. Run the Services
-You need to run both the API server and the background arq worker:
+You need to run the API server:
 
 ```bash
 # Install dependencies
@@ -77,9 +77,6 @@ pip install -r requirements.txt
 
 # Run the API Server
 python -m uvicorn app.main:app --port 3001 --reload
-
-# In a separate terminal, run the Background Worker
-arq app.worker.WorkerSettings
 ```
 
 ---

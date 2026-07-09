@@ -124,7 +124,7 @@ async def get_course(
     current_user: dict = Depends(get_current_user)
 ):
     # Returns course details with authorization verification
-    return await course_service.get_course_by_id(db, id, current_user["userId"] if current_user["role"] == "teacher" else None)
+    return await course_service.get_course_by_id(db, id, current_user["userId"] if current_user["role"] in ["faculty", "teacher"] else None)
 
 
 @router.patch("/{id}", status_code=status.HTTP_200_OK)

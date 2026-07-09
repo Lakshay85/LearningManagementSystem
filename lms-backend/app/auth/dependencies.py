@@ -47,6 +47,8 @@ async def get_current_user(
         email = payload.get("email")
         role = payload.get("role")
         
+        print(f"DEBUG JWT: email={email}, sub={user_id}, role={role}")
+        
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -54,7 +56,8 @@ async def get_current_user(
             )
             
         return {"userId": user_id, "email": email, "role": role}
-    except JWTError:
+    except JWTError as e:
+        print(f"DEBUG JWT ERROR: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive"
@@ -85,6 +88,7 @@ class RoleChecker:
         self.allowed_roles = allowed_roles
 
     def __call__(self, current_user: dict = Depends(get_current_user)) -> dict:
+        print(f"DEBUG ROLECHECKER: user_role={current_user.get('role')}, allowed={self.allowed_roles}")
         if current_user["role"] not in self.allowed_roles:
             roles_str = ", ".join(self.allowed_roles)
             raise HTTPException(
@@ -93,7 +97,7 @@ class RoleChecker:
             )
         return current_user
 
-require_faculty = RoleChecker(["teacher"])
+require_faculty = RoleChecker(["faculty", "teacher"])
 require_student = RoleChecker(["student"])
 
 async def get_refresh_token_user(

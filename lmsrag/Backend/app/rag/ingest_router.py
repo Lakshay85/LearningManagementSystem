@@ -36,7 +36,7 @@ async def upload_document(
         raise HTTPException(status_code=400, detail="courseId is required")
 
     if not ingestion_queue_service.is_queue_enabled():
-        raise HTTPException(status_code=503, detail="Async ingestion not available. Redis not configured.")
+        raise HTTPException(status_code=503, detail="Ingestion queue not available.")
 
     # Validate file type
     allowed_mimes = [
@@ -124,7 +124,7 @@ async def stream_progress(taskId: str):
 @router.post("/batch", status_code=201)
 async def batch_ingest(documents: List[dict] = Body(..., embed=True)):
     if not ingestion_queue_service.is_queue_enabled():
-        raise HTTPException(status_code=503, detail="Async ingestion not available. Redis not configured.")
+        raise HTTPException(status_code=503, detail="Ingestion queue not available.")
 
     task_ids = []
     for doc in documents:

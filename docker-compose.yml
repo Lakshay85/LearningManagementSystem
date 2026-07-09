@@ -70,23 +70,7 @@ services:
     networks:
       - lms-network
 
-  # Redis for Chat Memory & Caching
-  redis:
-    image: redis:7-alpine
-    container_name: lms-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass lms_redis_password
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ['CMD', 'redis-cli', '-a', 'lms_redis_password', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - lms-network
+
 
   # ==================== Backend Services ====================
 
@@ -130,7 +114,6 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@rag-postgres:5432/lmsrag
       JWT_ACCESS_SECRET: your-super-secret-jwt-key-change-in-production
-      REDIS_URL: redis://:lms_redis_password@redis:6379
       RABBITMQ_URL: amqp://lms_user:lms_password@rabbitmq:5672/lms_vhost
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       ALLOWED_ORIGINS: http://localhost:5173,http://localhost:8080
@@ -138,8 +121,6 @@ services:
       - '3001:3001'
     depends_on:
       rag-postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -172,8 +153,6 @@ volumes:
   rag_postgres_data:
     driver: local
   rabbitmq_data:
-    driver: local
-  redis_data:
     driver: local
 
 networks:

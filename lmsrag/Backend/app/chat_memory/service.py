@@ -1,5 +1,4 @@
 import json
-import redis.asyncio as aioredis
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
@@ -59,44 +58,7 @@ class ChatMessage:
 
 class ChatMemoryService:
     def __init__(self):
-        self.redis: Optional[aioredis.Redis] = None
-        self.redis_enabled = False
-        self.cache_ttl = 3600
-        self.max_cached_messages = 20
         self.context_window_size = 10
-
-    async def connect_redis(self):
-        if settings.REDIS_URL:
-            try:
-                self.redis = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
-                await self.redis.ping()
-                self.redis_enabled = True
-                print("🔴 Redis chat memory cache enabled")
-            except Exception as e:
-                print(f"⚠️ Redis connection failed, continuing without cache: {str(e)}")
-                self.redis = None
-                self.redis_enabled = False
-
-    async def disconnect(self):
-        if self.redis:
-            await self.redis.close()
-
-    async def cache_session(self, session: ChatSession):
-        if not self.redis_enabled or not self.redis:
-            return
-        await self.redis.setex(
-            f"session:{session.id}",
-            self.cache_ttl,
-            json.dumps(session.to_dict())
-        )
-
-    async def cache_message(self, session_id: str, message: ChatMessage):
-        if not self.redis_enabled or not self.redis:
-            return
-        key = f"messages:{session_id}"
-        await self.redis.rpush(key, json.dumps(message.to_dict()))
-        await self.redis.ltrim(key, -self.max_cached_messages, -1)
-        await self.redis.expire(key, self.cache_ttl)
 
     async def create_session(self, dto: dict) -> ChatSession:
         query = """
@@ -113,30 +75,15 @@ class ChatMemoryService:
         rows = await db_service.query(query, user_id, course_id, title, document_ids)
         session = ChatSession(dict(rows[0]))
         
-        await self.cache_session(session)
         print(f"📝 Created chat session: {session.id}")
         return session
 
     async def get_session(self, session_id: str) -> Optional[ChatSession]:
-        if self.redis_enabled and self.redis:
-            cached = await self.redis.get(f"session:{session_id}")
-            if cached:
-                try:
-                    data = json.loads(cached)
-                    # Convert dates back
-                    for col in ["created_at", "updated_at", "last_activity_at"]:
-                        if data.get(col):
-                            data[col] = datetime.fromisoformat(data[col])
-                    return ChatSession(data)
-                except Exception:
-                    pass
-
         rows = await db_service.query("SELECT * FROM chat_sessions WHERE id = $1", session_id)
         if not rows:
             return None
 
         session = ChatSession(dict(rows[0]))
-        await self.cache_session(session)
         return session
 
     async def get_user_sessions(self, user_id: str, limit: int = 20) -> List[ChatSession]:
@@ -163,17 +110,12 @@ class ChatMemoryService:
             "UPDATE chat_sessions SET title = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1",
             session_id, title
         )
-        if self.redis_enabled and self.redis:
-            await self.redis.delete(f"session:{session_id}")
 
     async def delete_session(self, session_id: str):
         await db_service.execute(
             "UPDATE chat_sessions SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1",
             session_id
         )
-        if self.redis_enabled and self.redis:
-            await self.redis.delete(f"session:{session_id}")
-            await self.redis.delete(f"messages:{session_id}")
         print(f"🗑️ Deleted chat session: {session_id}")
 
     async def add_message(self, dto: dict) -> ChatMessage:
@@ -209,11 +151,6 @@ class ChatMemoryService:
                 )
                 
         message = ChatMessage(dict(message_row))
-
-        if self.redis_enabled and self.redis:
-            await self.cache_message(dto["sessionId"], message)
-            await self.redis.delete(f"session:{dto['sessionId']}")
-
         return message
 
     async def get_session_messages(self, session_id: str, limit: int = 50) -> List[ChatMessage]:
@@ -228,14 +165,6 @@ class ChatMemoryService:
 
     async def get_recent_messages(self, session_id: str, limit: Optional[int] = None) -> List[ChatMessage]:
         message_limit = limit or self.context_window_size
-
-        if self.redis_enabled and self.redis:
-            cached = await self.redis.lrange(f"messages:{session_id}", -message_limit, -1)
-            if cached:
-                try:
-                    return [ChatMessage(json.loads(m)) for m in cached]
-                except Exception:
-                    pass
 
         query = """
             SELECT * FROM chat_messages 
@@ -281,8 +210,6 @@ class ChatMemoryService:
             "UPDATE chat_sessions SET summary = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1",
             session_id, summary
         )
-        if self.redis_enabled and self.redis:
-            await self.redis.delete(f"session:{session_id}")
 
 # Global chat memory service instance
 chat_memory_service = ChatMemoryService()

@@ -9,7 +9,7 @@ lms/
 ├── api-gateway/     # API Gateway Proxy (FastAPI)
 ├── lms-backend/     # FastAPI backend API
 ├── lms-frontend/    # React + Vite frontend
-└── lmsrag/          # RAG Service & arq Worker (FastAPI + Redis)
+└── lmsrag/          # RAG Service (FastAPI)
 ```
 
 ## Features
@@ -29,7 +29,7 @@ lms/
 - PostgreSQL & pgvector
 - JWT Authentication
 - RabbitMQ (Event-driven messaging)
-- Redis & arq (Background worker tasks)
+- In-process background tasks
 
 ### Frontend
 
@@ -50,7 +50,7 @@ lms/
 
 ### Running the App
 
-To run all infrastructure (databases, redis, rabbitmq) in Docker, and application services locally:
+To run all infrastructure (databases, rabbitmq) in Docker, and application services locally:
 
 ```bash
 # Run the local start batch script

@@ -50,7 +50,7 @@ lms-backend/
 
 ### 1. Prerequisites
 - Python 3.12+
-- PostgreSQL, Redis, RabbitMQ (usually run via the root `docker-compose.yml`)
+- PostgreSQL, RabbitMQ (usually run via the root `docker-compose.yml`)
 
 ### 2. Configure Environment
 Create a `.env` file in the root of `lms-backend/` based on `.env.example`:

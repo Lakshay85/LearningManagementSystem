@@ -58,7 +58,6 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3001,http://localhost:8080"
 
     # Infrastructure
-    REDIS_URL: str = "redis://:lms_redis_password@localhost:6379"
     RABBITMQ_URL: str = "amqp://lms_user:lms_password@localhost:5672/lms_vhost"
 
     # Intent Detection

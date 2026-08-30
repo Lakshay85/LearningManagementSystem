@@ -1,11 +1,9 @@
-
-
 services:
-  # ==================== Databases ====================
+  # ==================== Database ====================
   
-  # LMS PostgreSQL Database
+  # Unified LMS & RAG PostgreSQL Database with pgvector
   lms-postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: lms-postgres
     restart: unless-stopped
     environment:
@@ -18,63 +16,15 @@ services:
       - lms_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - lms-network
-
-  # RAG PostgreSQL Database with pgvector
-  rag-postgres:
-    image: pgvector/pgvector:pg16
-    container_name: lmsrag-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: lmsrag
-    ports:
-      - '5434:5432'
-    volumes:
-      - rag_postgres_data:/var/lib/postgresql/data
-      - ./lmsrag/Backend/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 10
     networks:
       - lms-network
 
-  # ==================== Infrastructure ====================
+  # ==================== Unified Backend ====================
 
-  # RabbitMQ Message Broker
-  rabbitmq:
-    image: rabbitmq:3.13-management-alpine
-    container_name: lms-rabbitmq
-    restart: unless-stopped
-    environment:
-      RABBITMQ_DEFAULT_USER: lms_user
-      RABBITMQ_DEFAULT_PASS: lms_password
-      RABBITMQ_DEFAULT_VHOST: lms_vhost
-    ports:
-      - '5672:5672'
-      - '15672:15672'
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - lms-network
-
-
-
-  # ==================== Backend Services ====================
-
-  # LMS Backend Service
+  # LMS & RAG Unified Backend Service
   lms-backend:
     build:
       context: ./lms-backend
@@ -91,38 +41,10 @@ services:
       DATABASE_NAME: lms
       JWT_ACCESS_SECRET: your-super-secret-jwt-key-change-in-production
       JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-in-production
-      RABBITMQ_URL: amqp://lms_user:lms_password@rabbitmq:5672/lms_vhost
     ports:
       - '3000:3000'
     depends_on:
       lms-postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks:
-      - lms-network
-
-  # RAG Backend Service
-  rag-backend:
-    build:
-      context: ./lmsrag/Backend
-      dockerfile: Dockerfile
-    container_name: rag-backend
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3001
-      DATABASE_URL: postgresql://postgres:postgres@rag-postgres:5432/lmsrag
-      JWT_ACCESS_SECRET: your-super-secret-jwt-key-change-in-production
-      RABBITMQ_URL: amqp://lms_user:lms_password@rabbitmq:5672/lms_vhost
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:8080
-    ports:
-      - '3001:3001'
-    depends_on:
-      rag-postgres:
-        condition: service_healthy
-      rabbitmq:
         condition: service_healthy
     networks:
       - lms-network
@@ -136,23 +58,18 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: http://localhost:3000
-        VITE_RAG_API_URL: http://localhost:3001
+        VITE_RAG_API_URL: http://localhost:3000
     container_name: lms-frontend
     restart: unless-stopped
     ports:
       - '5173:80'
     depends_on:
       - lms-backend
-      - rag-backend
     networks:
       - lms-network
 
 volumes:
   lms_postgres_data:
-    driver: local
-  rag_postgres_data:
-    driver: local
-  rabbitmq_data:
     driver: local
 
 networks:

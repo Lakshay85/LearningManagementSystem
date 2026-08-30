@@ -1,10 +1,8 @@
 import json
 import asyncio
-import aio_pika
-from typing import Any
+from typing import Any, Optional
 from pydantic import BaseModel
 
-from app.config import settings
 from app.messaging.constants import Exchanges, RoutingKeys
 from app.messaging.events import (
     UserCreatedEvent, UserUpdatedEvent, UserDeletedEvent,
@@ -13,103 +11,40 @@ from app.messaging.events import (
     DocumentLinkedToCourseEvent, VideoUploadedEvent, VideoLinkedToCourseEvent,
     NotificationEvent
 )
+from app.notifications.consumer import notification_consumer
 
 class MessagingService:
+    """
+    In-process asynchronous event dispatcher.
+    Replaces external message broker with low-latency in-process async tasks.
+    """
     def __init__(self):
-        self.connection: Optional[aio_pika.RobustConnection] = None
-        self.channel: Optional[aio_pika.RobustChannel] = None
-        self.is_connected = False
-        self._lock = asyncio.Lock()
+        self.is_connected = True
 
     async def connect(self):
-        if self.is_connected:
-            return
-        
-        async with self._lock:
-            if self.is_connected:
-                return
-
-            if not settings.RABBITMQ_URL:
-                print("⚠️ RABBITMQ_URL not configured, messaging disabled")
-                return
-
-            try:
-                # Use robust connection for automatic reconnects
-                self.connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
-                self.channel = await self.connection.channel()
-
-                # Setup exchanges
-                await self.setup_exchanges()
-
-                self.is_connected = True
-                print("🐰 Connected to RabbitMQ")
-            except Exception as e:
-                print(f"Failed to connect to RabbitMQ: {str(e)}")
-                self.is_connected = False
-
-    async def setup_exchanges(self):
-        if not self.channel:
-            return
-
-        exchanges = [
-            Exchanges.USER,
-            Exchanges.COURSE,
-            Exchanges.DOCUMENT,
-            Exchanges.RAG,
-            Exchanges.NOTIFICATION
-        ]
-
-        for exchange in exchanges:
-            await self.channel.declare_exchange(
-                name=exchange,
-                type=aio_pika.ExchangeType.TOPIC,
-                durable=True
-            )
-            print(f"Exchange declared: {exchange}")
+        self.is_connected = True
+        print("📨 In-process event dispatcher initialized")
 
     async def disconnect(self):
-        try:
-            if self.channel:
-                await self.channel.close()
-            if self.connection:
-                await self.connection.close()
-            self.is_connected = False
-            print("Disconnected from RabbitMQ")
-        except Exception as e:
-            print(f"Error disconnecting from RabbitMQ: {str(e)}")
+        self.is_connected = False
+        print("In-process event dispatcher stopped")
 
     async def publish(self, exchange_name: str, routing_key: str, message: Any) -> bool:
-        if not self.is_connected or not self.channel:
-            # Try to connect once in case of temporary disconnect
-            try:
-                await self.connect()
-            except Exception:
-                pass
-            
-            if not self.is_connected or not self.channel:
-                print(f"Cannot publish message, RabbitMQ not connected: {routing_key}")
-                return False
-
         try:
-            exchange = await self.channel.get_exchange(exchange_name)
-            
             if isinstance(message, BaseModel):
-                body = message.model_dump_json().encode('utf-8')
+                event_data = message.model_dump(mode="json")
+            elif isinstance(message, dict):
+                event_data = message
             else:
-                body = json.dumps(message, default=str).encode('utf-8')
+                event_data = json.loads(json.dumps(message, default=str))
 
-            await exchange.publish(
-                aio_pika.Message(
-                    body=body,
-                    delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
-                    content_type='application/json'
-                ),
-                routing_key=routing_key
-            )
-            print(f"📤 Published event: {routing_key}")
+            print(f"📤 Dispatched event: {routing_key}")
+            
+            # Dispatch in background task to notification consumer
+            asyncio.create_task(notification_consumer.process_event(routing_key, event_data))
             return True
         except Exception as e:
-            print(f"Failed to publish event {routing_key}: {str(e)}")
+            print(f"Failed to dispatch event {routing_key}: {str(e)}")
             return False
 
     # ==================== User Events ====================
@@ -160,7 +95,7 @@ class MessagingService:
 
     # ==================== Health Check ====================
     def is_healthy(self) -> bool:
-        return self.is_connected and self.connection and not self.connection.is_closed
+        return self.is_connected
 
 # Global messaging service instance
 messaging_service = MessagingService()

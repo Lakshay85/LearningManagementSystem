@@ -18,7 +18,8 @@ from app.messaging.events import (
     ContentAddedToCourseEvent, StudentEnrolledEvent, DocumentUploadedEvent,
     VideoLinkedToCourseEvent
 )
-from app.rag.client import rag_client
+from app.rag.service import rag_service
+from app.rag.dto import IngestFileDto
 
 class CourseService:
     def generate_slug(self, title: str) -> str:
@@ -642,7 +643,7 @@ class CourseService:
         await db.commit()
         await db.refresh(content)
 
-        # Ingest document into RAG system asynchronously or directly (ignoring failure, just like TS)
+        # Ingest document into RAG system asynchronously in-process
         try:
             metadata = {
                 "courseId": str(section.courseId),
@@ -650,11 +651,14 @@ class CourseService:
                 "documentType": document_type,
                 "uploaderId": instructor_id
             }
-            await rag_client.ingest_document(
-                file_buffer=file_buffer,
-                file_name=file_name,
-                mime_type=file_content_type,
-                metadata=metadata
+            doc_type_str = "pdf" if "pdf" in (file_content_type or "").lower() else "text"
+            await rag_service.ingest_file(
+                IngestFileDto(
+                    fileBuffer=file_buffer,
+                    fileName=file_name,
+                    docType=doc_type_str,
+                    metadata=metadata
+                )
             )
             print(f"Document ingested into RAG: {document.id}")
         except Exception as e:

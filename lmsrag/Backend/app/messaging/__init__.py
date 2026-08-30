@@ -1,1 +1,0 @@
-from app.messaging.event_consumer import event_consumer_service, EventConsumerService

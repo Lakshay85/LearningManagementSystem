@@ -12,7 +12,7 @@ class LocalStorageProvider:
         self.base_path = settings.STORAGE_LOCAL_PATH
         self.base_url = settings.STORAGE_BASE_URL
         os.makedirs(self.base_path, exist_ok=True)
-        print(f"🐰 Local storage provider initialized at: {self.base_path}")
+        print(f"[Storage] Local storage provider initialized at: {self.base_path}")
 
     def get_full_path(self, relative_path: str) -> str:
         return os.path.join(self.base_path, relative_path)

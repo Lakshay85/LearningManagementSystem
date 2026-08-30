@@ -1,75 +1,22 @@
 import json
 import asyncio
-import aio_pika
-from typing import Any
+from typing import Any, Dict
 from uuid import UUID
 
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.config import settings
 from app.database import AsyncSessionLocal
 from app.models.models import CourseEnrollment, User
 from app.models.enums import EnrollmentStatus, NotificationType, NotificationReferenceType
 from app.notifications.service import notification_service
 from app.notifications.schemas import CreateNotificationSchema
-from app.messaging.constants import Exchanges, Queues
-from sqlalchemy import and_
-
 
 class NotificationConsumer:
-    def __init__(self):
-        self.connection = None
-        self.channel = None
-        self.is_connected = False
-        self._consumer_task = None
-
-    async def connect(self):
-        if self.is_connected:
-            return
-
-        if not settings.RABBITMQ_URL:
-            print("⚠️ RABBITMQ_URL not configured, notification consumer disabled")
-            return
-
-        try:
-            self.connection = await aio_pika.connect_robust(settings.RABBITMQ_URL)
-            self.channel = await self.connection.channel()
-
-            # Declare queue
-            queue = await self.channel.declare_queue(
-                name=Queues.NOTIFICATION_EVENTS,
-                durable=True
-            )
-
-            # Bind to course events exchange with specific routing keys
-            await queue.bind(exchange=Exchanges.COURSE, routing_key="course.published")
-            await queue.bind(exchange=Exchanges.COURSE, routing_key="course.content.added")
-            await queue.bind(exchange=Exchanges.COURSE, routing_key="enrollment.created")
-            await queue.bind(exchange=Exchanges.COURSE, routing_key="video.uploaded")
-
-            self.is_connected = True
-            print("🔔 Notification consumer connected to RabbitMQ")
-            
-            # Start consuming in background task
-            self._consumer_task = asyncio.create_task(self.start_consuming(queue))
-        except Exception as e:
-            print(f"Failed to start notification consumer: {str(e)}")
-            self.is_connected = False
-
-    async def start_consuming(self, queue):
-        async with queue.iterator() as queue_iter:
-            async for message in queue_iter:
-                async with message.process():
-                    try:
-                        routing_key = message.routing_key
-                        body = json.loads(message.body.decode('utf-8'))
-                        print(f"📥 Consumer received event: {routing_key}")
-                        
-                        await self.process_event(routing_key, body)
-                    except Exception as e:
-                        print(f"Error processing message: {str(e)}")
-
+    """
+    In-process notification handler that processes domain events
+    and creates database notifications + emits real-time SSE updates.
+    """
     async def process_event(self, routing_key: str, content: dict):
-        # We handle DB session locally since we are in background task context
         async with AsyncSessionLocal() as db:
             try:
                 if routing_key == "course.published":
@@ -81,7 +28,7 @@ class NotificationConsumer:
                 elif routing_key == "video.uploaded":
                     await self.handle_video_uploaded(db, content)
                 else:
-                    print(f"Unknown routing key: {routing_key}")
+                    pass
             except Exception as e:
                 print(f"Failed to handle event {routing_key}: {str(e)}")
 
@@ -90,7 +37,6 @@ class NotificationConsumer:
         title = event["title"]
         instructor_id = event["instructorId"]
 
-        # Fetch active enrollments
         stmt = select(CourseEnrollment.studentId).where(
             and_(
                 CourseEnrollment.courseId == UUID(course_id),
@@ -103,12 +49,11 @@ class NotificationConsumer:
         if not student_ids:
             return
 
-        # Create notifications for all students
         await notification_service.create_for_multiple_users(
             db=db,
             user_ids=student_ids,
             dto=CreateNotificationSchema(
-                userId="", # will be set per user
+                userId="",
                 type=NotificationType.COURSE_PUBLISHED,
                 title="Course Published",
                 message=f'The course "{title}" is now published and available for learning!',
@@ -129,7 +74,6 @@ class NotificationConsumer:
         content_id = event["contentId"]
         content_title = event["contentTitle"]
 
-        # Fetch active enrollments
         stmt = select(CourseEnrollment.studentId).where(
             and_(
                 CourseEnrollment.courseId == UUID(course_id),
@@ -226,17 +170,6 @@ class NotificationConsumer:
                 metadata={"videoTitle": title}
             )
         )
-
-    async def disconnect(self):
-        try:
-            if self._consumer_task:
-                self._consumer_task.cancel()
-            if self.channel:
-                await self.channel.close()
-            if self.connection:
-                await self.connection.close()
-        except Exception as e:
-            print(f"Error closing consumer: {str(e)}")
 
 # Global notification consumer instance
 notification_consumer = NotificationConsumer()

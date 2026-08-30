@@ -1,5 +1,5 @@
-// RAG API Client - Communicates with RAG backend using JWT auth from LMS
-const RAG_API_URL = import.meta.env.VITE_RAG_API_URL || "http://localhost:3001";
+// RAG API Client - Communicates with unified backend using JWT auth from LMS
+const RAG_API_URL = import.meta.env.VITE_RAG_API_URL || import.meta.env.VITE_API_URL || "http://localhost:3000";
 const RAG_API_KEY = import.meta.env.VITE_RAG_API_KEY;
 
 /**

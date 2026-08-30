@@ -16,7 +16,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     except Exception as e:
         print(f"Health check database failure: {str(e)}")
 
-    mq_status = "healthy" if messaging_service.is_healthy() else "unhealthy"
+    events_status = "healthy" if messaging_service.is_healthy() else "unhealthy"
 
     overall_status = "healthy"
     if db_status == "unhealthy":
@@ -27,7 +27,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         "timestamp": datetime_to_iso(),
         "services": {
             "database": db_status,
-            "rabbitmq": mq_status
+            "events": events_status
         }
     }
 

@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Build arguments for environment variables
 ARG VITE_API_URL=http://localhost:3000
-ARG VITE_RAG_API_URL=http://localhost:3001
+ARG VITE_RAG_API_URL=http://localhost:3000
 
 # Set environment variables for build
 ENV VITE_API_URL=$VITE_API_URL

@@ -6,30 +6,28 @@ A full-stack Learning Management System built with Python/FastAPI (backend) and 
 
 ```
 lms/
-├── api-gateway/     # API Gateway Proxy (FastAPI)
-├── lms-backend/     # FastAPI backend API
-├── lms-frontend/    # React + Vite frontend
-└── lmsrag/          # RAG Service (FastAPI)
+├── lms-backend/     # Unified LMS & RAG FastAPI backend API
+└── lms-frontend/    # React + Vite frontend
 ```
 
 ## Features
 
 - User authentication (signup/login) with JWT
 - Student dashboard with course tracking
+- AI Teaching Assistant with RAG, pgvector search, and SSE streaming responses
+- Structure-aware document parsing & ingestion (PDF/Text)
 - Daily learning activity analytics
-- Weekly status monitoring
-- Responsive design with Tailwind CSS
+- Responsive modern UI
 
 ## Tech Stack
 
 ### Backend
 
 - Python / FastAPI
-- SQLAlchemy & Alembic
-- PostgreSQL & pgvector
-- JWT Authentication
-- RabbitMQ (Event-driven messaging)
-- In-process background tasks
+- SQLAlchemy (Async) & asyncpg
+- PostgreSQL & pgvector (IVFFlat index)
+- Groq LLMs & FastEmbed ONNX Embeddings
+- In-process async event dispatching & SSE streaming
 
 ### Frontend
 

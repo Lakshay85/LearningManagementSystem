@@ -113,20 +113,14 @@ const handleAuthFailure = () => {
 const apiClient = async (endpoint, options = {}) => {
   const { method = "GET", data, params, headers, ...rest } = options;
 
-  try {
-    const response = await axiosInstance({
-      url: endpoint,
-      method,
-      data,
-      params,
-      headers,
-      ...rest,
-    });
-
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  return await axiosInstance({
+    url: endpoint,
+    method,
+    data,
+    params,
+    headers,
+    ...rest,
+  });
 };
 
 /**

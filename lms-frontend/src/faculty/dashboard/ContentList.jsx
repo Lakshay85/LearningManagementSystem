@@ -30,7 +30,7 @@ const formatFileSize = (bytes) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-const ContentList = ({ items, type, onItemClick, onActionClick, actionLabel = "View" }) => {
+const ContentList = ({ items, type, onActionClick, actionLabel = "View" }) => {
     if (!items || items.length === 0) {
         return (
             <div className="p-8 text-center bg-white rounded-xl border border-gray-200 shadow-sm">

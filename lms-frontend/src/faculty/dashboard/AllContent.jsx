@@ -104,7 +104,7 @@ const getFileTypeLabel = (fileType, mimeType) => {
 };
 
 // Content card component
-const ContentCard = ({ content, onView, onEdit, onDelete, onDownload }) => {
+const ContentCard = ({ content, onView, onEdit, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false);
   const isVideo = content.type === "video";
 

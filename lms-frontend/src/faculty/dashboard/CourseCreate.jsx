@@ -954,7 +954,7 @@ const CourseCreate = ({ setActiveTab, editingCourse, setEditingCourse }) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {sections.map((section, index) => (
+              {sections.map((section) => (
                 <div
                   key={section.id}
                   className="border border-gray-200 rounded-lg overflow-hidden"

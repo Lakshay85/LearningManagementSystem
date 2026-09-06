@@ -36,12 +36,9 @@ function StudentDashboard() {
   }, [fetchEnrolledCourses]);
 
   // Handle enrollment success - refresh enrolled courses
-  const handleEnrollSuccess = useCallback(
-    (course) => {
-      fetchEnrolledCourses();
-    },
-    [fetchEnrolledCourses]
-  );
+  const handleEnrollSuccess = useCallback(() => {
+    fetchEnrolledCourses();
+  }, [fetchEnrolledCourses]);
 
   // Handle viewing enrolled course
   const handleViewEnrolledCourse = useCallback((enrollment) => {

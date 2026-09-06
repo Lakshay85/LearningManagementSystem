@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useCallback, createContext, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import authApi from "../utils/authApi";
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
             const userData = await authApi.getCurrentUser();
             setUser(userData);
             setIsAuthenticated(true);
-        } catch (error) {
+        } catch {
             // User not authenticated or session expired
             setUser(null);
             setIsAuthenticated(false);

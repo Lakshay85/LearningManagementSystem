@@ -42,7 +42,7 @@ const ContentTypeIcon = ({ type, className = "w-5 h-5" }) => {
 const DocumentViewer = ({ document, content }) => {
   const [loading, setLoading] = useState(true);
   const [viewerFailed, setViewerFailed] = useState(false);
-  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const getDocumentUrl = () => {
     if (document?.id) {
@@ -116,7 +116,7 @@ const DocumentViewer = ({ document, content }) => {
   }, [isOfficeDoc, loading, viewerFailed]);
 
   // Fallback card for when viewer fails
-  const FallbackCard = () => (
+  const renderFallbackCard = () => (
     <div className="flex flex-col items-center justify-center h-full text-center">
       <div className="bg-white rounded-xl shadow-lg p-8 max-w-md">
         <File className="w-16 h-16 text-blue-500 mx-auto mb-4" />
@@ -180,7 +180,7 @@ const DocumentViewer = ({ document, content }) => {
           </div>
         ) : isOfficeDoc && getDocumentUrl() ? (
           viewerFailed ? (
-            <FallbackCard />
+            renderFallbackCard()
           ) : (
             <div className="h-full">
               {loading && (
@@ -607,7 +607,6 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedContent, setSelectedContent] = useState(null);
-  const [selectedSection, setSelectedSection] = useState(null);
   const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
@@ -616,7 +615,6 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
         setLoading(true);
         // Reset selected content when course changes
         setSelectedContent(null);
-        setSelectedSection(null);
         const data = await studentApi.getEnrolledCourseContent(
           initialCourse.courseId || initialCourse.id
         );
@@ -633,9 +631,8 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
     fetchCourseContent();
   }, [initialCourse]);
 
-  const handleSelectContent = (content, section) => {
+  const handleSelectContent = (content) => {
     setSelectedContent(content);
-    setSelectedSection(section);
   };
 
   const renderContentViewer = () => {

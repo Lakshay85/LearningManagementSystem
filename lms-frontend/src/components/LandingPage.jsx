@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import LmsLogo from "./common/LmsLogo";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -35,11 +36,9 @@ const LandingPage = () => {
       {/* Fixed Header */}
       <header className="fixed top-4 left-4 right-4 z-50 top-2 left-4 right-4 z-50 mx-auto max-w-7xl">
         <div className="flex justify-between items-center px-8 py-4 bg-white/10 backdrop-blur-2xl rounded-full border border-white/20 shadow-xl shadow-black/5 animate-on-scroll">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-            </div>
-            <span className="font-bold tracking-tight text-xl">
+          <div className="flex items-center gap-3">
+            <LmsLogo size={36} />
+            <span className="font-bold tracking-tight text-xl text-slate-900">
               LMS Enterprise
             </span>
           </div>
@@ -328,9 +327,7 @@ const LandingPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
               <div className="md:col-span-5">
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                    <div className="w-4 h-4 bg-white rounded-full"></div>
-                  </div>
+                  <LmsLogo size={40} />
                   <span className="font-bold text-2xl tracking-tighter">
                     LMS — Future of Learning
                   </span>

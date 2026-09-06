@@ -101,7 +101,7 @@ const SectionAccordion = ({ section, isOpen, onToggle }) => {
       {/* Section Contents */}
       {isOpen && (
         <div className="divide-y divide-gray-100">
-          {section.contents.map((content, index) => (
+          {section.contents.map((content) => (
             <div
               key={content.id}
               className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"

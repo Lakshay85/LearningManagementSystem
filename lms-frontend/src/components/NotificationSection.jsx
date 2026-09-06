@@ -56,7 +56,7 @@ const NotificationSection = ({ isOpen, onClose }) => {
                             );
                             setUnreadCount(0);
                         }
-                    } catch (e) {
+                    } catch {
                         // Ignore heartbeat messages and parse errors
                     }
                 };

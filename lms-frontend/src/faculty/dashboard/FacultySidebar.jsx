@@ -20,6 +20,23 @@ import {
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 
+const SidebarItem = ({ item, onClick, isActive, isExpanded }) => (
+  <div className="relative group">
+    <button
+      onClick={onClick}
+      data-tooltip-id={!isExpanded ? "sidebar-tooltip" : undefined}
+      data-tooltip-content={item.label}
+      className={`w-full flex items-center ${isExpanded ? "gap-3 px-3" : "justify-center px-2"} py-2.5 rounded-lg text-sm transition-colors ${isActive
+        ? "bg-emerald-50 text-emerald-700 font-medium"
+        : "text-gray-600 hover:bg-gray-100"
+        }`}
+    >
+      <item.icon className="w-5 h-5 flex-shrink-0" />
+      {isExpanded && <span className="truncate">{item.label}</span>}
+    </button>
+  </div>
+);
+
 /**
  * Sidebar Component with Minimize/Maximize functionality
  */
@@ -59,23 +76,6 @@ const FacultySidebar = ({ activeTab, setActiveTab }) => {
     setActiveTab("logout");
     setIsLogoutModalOpen(false);
   };
-
-  const SidebarItem = ({ item, onClick, isActive }) => (
-    <div className="relative group">
-      <button
-        onClick={onClick}
-        data-tooltip-id={!isExpanded ? "sidebar-tooltip" : undefined}
-        data-tooltip-content={item.label}
-        className={`w-full flex items-center ${isExpanded ? "gap-3 px-3" : "justify-center px-2"} py-2.5 rounded-lg text-sm transition-colors ${isActive
-          ? "bg-emerald-50 text-emerald-700 font-medium"
-          : "text-gray-600 hover:bg-gray-100"
-          }`}
-      >
-        <item.icon className="w-5 h-5 flex-shrink-0" />
-        {isExpanded && <span className="truncate">{item.label}</span>}
-      </button>
-    </div>
-  );
 
   return (
     <div
@@ -139,6 +139,7 @@ const FacultySidebar = ({ activeTab, setActiveTab }) => {
                   key={item.id}
                   item={item}
                   isActive={activeTab === item.id}
+                  isExpanded={isExpanded}
                   onClick={() => handleNavigation(item.id)}
                 />
               ))}
@@ -171,6 +172,7 @@ const FacultySidebar = ({ activeTab, setActiveTab }) => {
                   key={item.id}
                   item={item}
                   isActive={activeTab === item.id}
+                  isExpanded={isExpanded}
                   onClick={() => handleNavigation(item.id)}
                 />
               ))}
@@ -184,11 +186,13 @@ const FacultySidebar = ({ activeTab, setActiveTab }) => {
         <SidebarItem
           item={{ icon: Settings, label: "Settings" }}
           isActive={activeTab === "settings"}
+          isExpanded={isExpanded}
           onClick={() => handleNavigation("settings")}
         />
         <SidebarItem
           item={{ icon: LogOut, label: "Logout" }}
           isActive={activeTab === "logout"}
+          isExpanded={isExpanded}
           onClick={() => handleNavigation("logout")}
         />
       </div>

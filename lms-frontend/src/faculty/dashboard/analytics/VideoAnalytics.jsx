@@ -42,21 +42,6 @@ const VideoAnalytics = () => {
         }
     };
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        });
-    };
-
-    const formatTime = (dateString) => {
-        return new Date(dateString).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
     // Process data for charts
     const getChartData = () => {
         if (!data) return null;
@@ -89,7 +74,7 @@ const VideoAnalytics = () => {
         allVideos.forEach(video => {
             const d = new Date(video.createdAt);
             const monthYear = d.toLocaleString('default', { month: 'short', year: 'numeric' });
-            if (months.hasOwnProperty(monthYear)) {
+            if (monthYear in months) {
                 months[monthYear]++;
             }
         });

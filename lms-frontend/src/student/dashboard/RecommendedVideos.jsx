@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 // Base URL handling - using what user prefers
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://localhost:8000";
 
 // Format relative time
 const formatRelativeTime = (dateString) => {
@@ -275,8 +275,8 @@ const RecommendedVideos = () => {
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
               className={`p-1.5 rounded-lg transition-all ${canScrollLeft
-                  ? "hover:bg-slate-100 text-slate-600"
-                  : "text-slate-300 cursor-not-allowed"
+                ? "hover:bg-slate-100 text-slate-600"
+                : "text-slate-300 cursor-not-allowed"
                 }`}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -286,8 +286,8 @@ const RecommendedVideos = () => {
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
               className={`p-1.5 rounded-lg transition-all ${canScrollRight
-                  ? "hover:bg-slate-100 text-slate-600"
-                  : "text-slate-300 cursor-not-allowed"
+                ? "hover:bg-slate-100 text-slate-600"
+                : "text-slate-300 cursor-not-allowed"
                 }`}
             >
               <ChevronRight className="w-5 h-5" />

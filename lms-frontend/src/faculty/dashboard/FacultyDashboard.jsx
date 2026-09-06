@@ -14,7 +14,7 @@ import MyStudents from "./students/MyStudents";
 import Analytics from "./analytics/Analytics";
 import Settings from "./settings/Settings";
 import NotificationSection from "../../components/NotificationSection";
-import { applyThemeFonts } from "./settings/StyleSettings";
+import { applyThemeFonts } from "./settings/themeUtils";
 
 function FacultyDashboard() {
   const { user, logout } = useAuth();

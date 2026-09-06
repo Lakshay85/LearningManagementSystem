@@ -193,7 +193,7 @@ export const queryRagStream = ({
                   onDone?.();
                   break;
               }
-            } catch (e) {
+            } catch {
               console.warn("Failed to parse SSE data:", line);
             }
           }

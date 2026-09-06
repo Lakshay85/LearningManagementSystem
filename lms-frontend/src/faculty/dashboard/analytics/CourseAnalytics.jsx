@@ -42,21 +42,6 @@ const CourseAnalytics = () => {
         }
     };
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        });
-    };
-
-    const formatTime = (dateString) => {
-        return new Date(dateString).toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
     const getChartData = () => {
         if (!data) return null;
 
@@ -88,7 +73,7 @@ const CourseAnalytics = () => {
         allCourses.forEach(course => {
             const d = new Date(course.createdAt);
             const monthYear = d.toLocaleString('default', { month: 'short', year: 'numeric' });
-            if (months.hasOwnProperty(monthYear)) {
+            if (monthYear in months) {
                 months[monthYear]++;
             }
         });

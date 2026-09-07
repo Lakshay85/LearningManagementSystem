@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Video, Clock, Calendar } from "lucide-react";
+import { Video } from "lucide-react";
 import {
     Chart as ChartJS,
     ArcElement,

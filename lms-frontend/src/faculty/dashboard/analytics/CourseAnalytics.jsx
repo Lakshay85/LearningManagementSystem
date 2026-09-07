@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BookOpen, Clock, Calendar } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import {
     Chart as ChartJS,
     ArcElement,

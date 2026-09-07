@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
@@ -20,9 +19,14 @@ class Settings(BaseSettings):
     NODE_ENV: str = "development"
 
     # Storage Configuration
-    STORAGE_PROVIDER: str = "local"
+    STORAGE_PROVIDER: str = "imagekit"
     STORAGE_LOCAL_PATH: str = "uploads"
     STORAGE_BASE_URL: str = "http://localhost:3000"
+
+    # ImageKit Configuration
+    IMAGEKIT_PUBLIC_KEY: str = ""
+    IMAGEKIT_PRIVATE_KEY: str = ""
+    IMAGEKIT_URL_ENDPOINT: str = ""
 
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5174"

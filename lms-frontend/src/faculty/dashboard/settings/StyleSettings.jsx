@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, Palette, Eye, AlertCircle, RefreshCw } from "lucide-react";
+import { Check, Palette, Eye, AlertCircle } from "lucide-react";
 import { applyThemeFonts } from "./themeUtils";
 
 const StyleSettings = () => {

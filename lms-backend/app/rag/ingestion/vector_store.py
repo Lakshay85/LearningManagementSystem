@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Any
 from langchain_core.documents import Document
 
 from app.rag.db_service import rag_db_service

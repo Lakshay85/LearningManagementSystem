@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, status, UploadFile, File, Form, Query, Request
+from fastapi import APIRouter, Depends, Response, status, UploadFile, File, Form, Request
 from fastapi.responses import StreamingResponse, FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -210,25 +210,35 @@ async def stream_video(
     db: AsyncSession = Depends(get_db),
     current_user: Optional[dict] = Depends(get_current_user_optional)
 ):
+    from fastapi.responses import RedirectResponse
+    import asyncio
+
     user_id = current_user["userId"] if current_user else None
-    
-    # Get local path
-    relative_path = await video_service.get_video_stream_path(db, id, user_id)
-    # The uploads folder path
+
+    # Get the video record to check for CDN URL
+    video = await video_service.get_video_by_id(db, id, user_id)
+
+    # Increment view count in background
+    asyncio.create_task(video_service.increment_view_count(db, id))
+
+    # If the video has a CDN URL (ImageKit), redirect to it
+    if video.cdnUrl:
+        return RedirectResponse(url=video.cdnUrl, status_code=302)
+
+    # Otherwise, stream from local storage
+    relative_path = video.storagePath
     uploads_dir = os.path.join(os.getcwd(), "uploads")
     file_path = os.path.join(uploads_dir, relative_path)
 
     if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Video file not found")
+        from fastapi import HTTPException as HTTPExc
+        raise HTTPExc(status_code=404, detail="Video file not found")
 
     file_size = os.path.getsize(file_path)
     guessed_type, _ = mimetypes.guess_type(file_path)
     mime_type = guessed_type or "video/mp4"
 
     range_header = request.headers.get("range")
-    
-    # Increment view count in background/async
-    asyncio.create_task(video_service.increment_view_count(db, id))
 
     if range_header:
         # Range header format: bytes=start-end

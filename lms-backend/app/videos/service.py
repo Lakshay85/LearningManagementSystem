@@ -38,7 +38,11 @@ class VideoService:
 
         try:
             # Upload
-            await storage_service.upload(file_buffer, storage_path, file_mime_type)
+            upload_result = await storage_service.upload(file_buffer, storage_path, file_mime_type)
+
+            # Extract ImageKit metadata if available
+            imagekit_file_id = upload_result.get("fileId")
+            cdn_url = upload_result.get("cdnUrl")
 
             # Save in database
             video = Video(
@@ -52,6 +56,8 @@ class VideoService:
                 mimeType=file_mime_type,
                 fileSize=file_size,
                 storagePath=storage_path,
+                imagekitFileId=imagekit_file_id,
+                cdnUrl=cdn_url,
                 uploaderId=UUID(uploader_id)
             )
 
@@ -310,7 +316,9 @@ class VideoService:
 
         # Delete physical files
         try:
-            if video.storagePath:
+            if video.imagekitFileId:
+                await storage_service.delete_by_file_id(video.imagekitFileId)
+            elif video.storagePath:
                 await storage_service.delete(video.storagePath)
             if video.thumbnailPath:
                 await storage_service.delete(video.thumbnailPath)

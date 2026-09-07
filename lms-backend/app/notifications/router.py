@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, status, Query, Request, Body
+from fastapi import APIRouter, Depends, Response, status, Request, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 from datetime import datetime

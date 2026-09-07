@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict
 
 from app.rag.format.types import OutputFormat, DetectionConfidence
 from app.rag.format.intent_detector import FormatIntent

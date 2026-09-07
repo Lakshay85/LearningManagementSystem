@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, status, Query, Request, UploadFile, File, Form, Body
+from fastapi import APIRouter, Depends, status, UploadFile, File, Form, Body
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Union
@@ -265,7 +265,13 @@ async def download_document(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+    from fastapi.responses import RedirectResponse
+
     document, file_path = await course_service.get_document_for_download(db, documentId, current_user["userId"])
+
+    # If the document has a CDN URL (ImageKit), redirect to it
+    if document.cdnUrl:
+        return RedirectResponse(url=document.cdnUrl, status_code=302)
     
     encoded_filename = urllib.parse.quote(document.originalFilename)
     headers = {
@@ -284,7 +290,13 @@ async def preview_document(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+    from fastapi.responses import RedirectResponse
+
     document, file_path = await course_service.get_document_for_download(db, documentId, current_user["userId"])
+    
+    # If the document has a CDN URL (ImageKit), redirect to it
+    if document.cdnUrl:
+        return RedirectResponse(url=document.cdnUrl, status_code=302)
     
     encoded_filename = urllib.parse.quote(document.originalFilename)
     headers = {

@@ -60,10 +60,13 @@ class UserService:
         filename = f"profiles/{user_id}-{int(datetime.now().timestamp())}.{file_ext}"
 
         # Upload file to storage
-        await storage_service.upload(file_buffer, filename, mime_type)
+        upload_result = await storage_service.upload(file_buffer, filename, mime_type)
         
-        # Get public url
-        public_url = storage_service.get_public_url(filename)
+        # Use CDN URL if available (ImageKit), otherwise construct local URL
+        if isinstance(upload_result, dict) and upload_result.get("cdnUrl"):
+            public_url = upload_result["cdnUrl"]
+        else:
+            public_url = storage_service.get_public_url(filename)
         
         # Update user's profilePicture
         user.profilePicture = public_url

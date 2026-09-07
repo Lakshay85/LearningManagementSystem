@@ -20,9 +20,6 @@ class LoginSchema(BaseModel):
     email: EmailStr
     password: str
 
-class RefreshTokenSchema(BaseModel):
-    refreshToken: Optional[str] = None
-
 class UpdatePasswordSchema(BaseModel):
     currentPassword: str
     newPassword: str = Field(..., min_length=6)

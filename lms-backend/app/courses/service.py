@@ -602,7 +602,17 @@ class CourseService:
 
         # Save file to storage
         stored_filename = f"{int(time.time() * 1000)}-{file_name}"
-        storage_path = await storage_service.save_document(file_buffer, stored_filename)
+        upload_result = await storage_service.save_document(file_buffer, stored_filename)
+
+        # Extract storage path and ImageKit metadata
+        if isinstance(upload_result, dict):
+            storage_path = upload_result.get("path", f"documents/{datetime.now().year}/{stored_filename}")
+            imagekit_file_id = upload_result.get("fileId")
+            cdn_url = upload_result.get("cdnUrl")
+        else:
+            storage_path = upload_result
+            imagekit_file_id = None
+            cdn_url = None
 
         # Create Document record
         document = Document(
@@ -614,6 +624,8 @@ class CourseService:
             mimeType=file_content_type,
             fileSize=file_size,
             documentType=document_type,
+            imagekitFileId=imagekit_file_id,
+            cdnUrl=cdn_url,
             uploaderId=UUID(instructor_id)
         )
         db.add(document)
@@ -745,7 +757,10 @@ class CourseService:
 
         if content.document:
             # Delete from physical storage
-            await storage_service.delete_file(content.document.storagePath)
+            if content.document.imagekitFileId:
+                await storage_service.delete_by_file_id(content.document.imagekitFileId)
+            else:
+                await storage_service.delete_file(content.document.storagePath)
             await db.delete(content.document)
             course.totalDocuments = max(0, (course.totalDocuments or 0) - 1)
 

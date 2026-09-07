@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import VideoPlayerModal from "./VideoPlayerModal";
 import facultyApi from "../../utils/facultyApi";
+import CustomSelect from "../../components/common/CustomSelect";
 
 // Format file size
 const formatFileSize = (bytes) => {
@@ -464,13 +465,13 @@ const AllContent = ({ setActiveTab }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   File Type
                 </label>
-                <select
+                <CustomSelect
                   value={fileTypeFilter}
                   onChange={(e) => {
                     setFileTypeFilter(e.target.value);
                     setPagination((prev) => ({ ...prev, page: 1 }));
                   }}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-gray-200 rounded-lg"
                 >
                   <option value="">All Types</option>
                   <option value="video">Videos</option>
@@ -480,7 +481,7 @@ const AllContent = ({ setActiveTab }) => {
                   <option value="powerpoint">Presentations</option>
                   <option value="image">Images</option>
                   <option value="other">Other</option>
-                </select>
+                </CustomSelect>
               </div>
 
               {/* Time Filter */}
@@ -488,13 +489,13 @@ const AllContent = ({ setActiveTab }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Upload Time
                 </label>
-                <select
+                <CustomSelect
                   value={timeFilter}
                   onChange={(e) => {
                     setTimeFilter(e.target.value);
                     setPagination((prev) => ({ ...prev, page: 1 }));
                   }}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-gray-200 rounded-lg"
                 >
                   <option value="">All Time</option>
                   <option value="today">Today</option>
@@ -502,7 +503,7 @@ const AllContent = ({ setActiveTab }) => {
                   <option value="month">This Month</option>
                   <option value="quarter">Last 3 Months</option>
                   <option value="year">This Year</option>
-                </select>
+                </CustomSelect>
               </div>
 
               {/* Size Filter */}
@@ -510,20 +511,20 @@ const AllContent = ({ setActiveTab }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   File Size
                 </label>
-                <select
+                <CustomSelect
                   value={sizeFilter}
                   onChange={(e) => {
                     setSizeFilter(e.target.value);
                     setPagination((prev) => ({ ...prev, page: 1 }));
                   }}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-gray-200 rounded-lg"
                 >
                   <option value="">All Sizes</option>
                   <option value="small">Small (&lt; 10 MB)</option>
                   <option value="medium">Medium (10-100 MB)</option>
                   <option value="large">Large (100-500 MB)</option>
                   <option value="xlarge">Very Large (&gt; 500 MB)</option>
-                </select>
+                </CustomSelect>
               </div>
 
               {/* Sort By */}
@@ -531,13 +532,13 @@ const AllContent = ({ setActiveTab }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Sort By
                 </label>
-                <select
+                <CustomSelect
                   value={sortBy}
                   onChange={(e) => {
                     setSortBy(e.target.value);
                     setPagination((prev) => ({ ...prev, page: 1 }));
                   }}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full border border-gray-200 rounded-lg"
                 >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
@@ -545,7 +546,7 @@ const AllContent = ({ setActiveTab }) => {
                   <option value="size-desc">Largest First</option>
                   <option value="size-asc">Smallest First</option>
                   <option value="popular">Most Popular</option>
-                </select>
+                </CustomSelect>
               </div>
             </div>
 

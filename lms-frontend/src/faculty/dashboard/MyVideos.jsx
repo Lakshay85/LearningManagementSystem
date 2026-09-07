@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import VideoPlayerModal from "./VideoPlayerModal";
 import facultyApi from "../../utils/facultyApi";
+import CustomSelect from "../../components/common/CustomSelect";
 
 // Format file size
 const formatFileSize = (bytes) => {
@@ -350,39 +351,45 @@ const MyVideos = ({ setActiveTab }) => {
 
           {/* Category Filter */}
           <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-400" />
-            <select
-              value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setPagination((prev) => ({ ...prev, page: 1 }));
-              }}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="">All Categories</option>
-              <option value="lecture">Lecture</option>
-              <option value="tutorial">Tutorial</option>
-              <option value="lab">Lab</option>
-              <option value="seminar">Seminar</option>
-              <option value="workshop">Workshop</option>
-              <option value="other">Other</option>
-            </select>
+            <Filter className="w-5 h-5 text-gray-400 shrink-0" />
+            <div className="min-w-[150px]">
+              <CustomSelect
+                value={categoryFilter}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setPagination((prev) => ({ ...prev, page: 1 }));
+                }}
+                className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                options={[
+                  { value: "", label: "All Categories" },
+                  { value: "lecture", label: "Lecture" },
+                  { value: "tutorial", label: "Tutorial" },
+                  { value: "lab", label: "Lab" },
+                  { value: "seminar", label: "Seminar" },
+                  { value: "workshop", label: "Workshop" },
+                  { value: "other", label: "Other" },
+                ]}
+              />
+            </div>
           </div>
 
           {/* Visibility Filter */}
-          <select
-            value={visibilityFilter}
-            onChange={(e) => {
-              setVisibilityFilter(e.target.value);
-              setPagination((prev) => ({ ...prev, page: 1 }));
-            }}
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-            <option value="">All Visibility</option>
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-            <option value="unlisted">Unlisted</option>
-          </select>
+          <div className="min-w-[140px]">
+            <CustomSelect
+              value={visibilityFilter}
+              onChange={(e) => {
+                setVisibilityFilter(e.target.value);
+                setPagination((prev) => ({ ...prev, page: 1 }));
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+              options={[
+                { value: "", label: "All Visibility" },
+                { value: "public", label: "Public" },
+                { value: "private", label: "Private" },
+                { value: "unlisted", label: "Unlisted" },
+              ]}
+            />
+          </div>
 
           {/* Refresh Button */}
           <button

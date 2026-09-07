@@ -10,6 +10,7 @@ import {
   Info,
 } from "lucide-react";
 import facultyApi from "../../utils/facultyApi";
+import CustomSelect from "../../components/common/CustomSelect";
 
 // Constants for validation
 const ALLOWED_VIDEO_TYPES = [
@@ -514,22 +515,23 @@ const VideoUpload = () => {
                     >
                       Category
                     </label>
-                    <select
+                    <CustomSelect
                       id="category"
                       name="category"
                       value={formData.category}
                       onChange={handleInputChange}
                       disabled={uploadStatus === "uploading"}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100"
-                    >
-                      <option value="">Select category</option>
-                      <option value="lecture">Lecture</option>
-                      <option value="tutorial">Tutorial</option>
-                      <option value="lab">Lab Session</option>
-                      <option value="seminar">Seminar</option>
-                      <option value="workshop">Workshop</option>
-                      <option value="other">Other</option>
-                    </select>
+                      options={[
+                        { value: "", label: "Select category" },
+                        { value: "lecture", label: "Lecture" },
+                        { value: "tutorial", label: "Tutorial" },
+                        { value: "lab", label: "Lab Session" },
+                        { value: "seminar", label: "Seminar" },
+                        { value: "workshop", label: "Workshop" },
+                        { value: "other", label: "Other" },
+                      ]}
+                    />
                   </div>
 
                   <div>
@@ -539,18 +541,19 @@ const VideoUpload = () => {
                     >
                       Visibility
                     </label>
-                    <select
+                    <CustomSelect
                       id="visibility"
                       name="visibility"
                       value={formData.visibility}
                       onChange={handleInputChange}
                       disabled={uploadStatus === "uploading"}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:bg-gray-100"
-                    >
-                      <option value="private">Private</option>
-                      <option value="public">Public</option>
-                      <option value="unlisted">Unlisted</option>
-                    </select>
+                      options={[
+                        { value: "private", label: "Private" },
+                        { value: "public", label: "Public" },
+                        { value: "unlisted", label: "Unlisted" },
+                      ]}
+                    />
                   </div>
                 </div>
 

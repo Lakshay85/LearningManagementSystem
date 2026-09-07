@@ -319,10 +319,31 @@
 .theme-active input[type="email"],
 .theme-active input[type="password"],
 .theme-active textarea,
-.theme-active select {
+.theme-active select,
+.theme-active button[aria-haspopup="listbox"] {
   background: var(--theme-card-bg) !important;
   border: var(--theme-card-border) !important;
   border-radius: calc(var(--theme-card-radius) * 0.7) !important;
+  color: var(--theme-text-primary) !important;
+}
+
+.theme-active select option {
+  background-color: var(--theme-card-bg, #ffffff) !important;
+  color: var(--theme-text-primary, #111827) !important;
+  padding: 8px 12px;
+}
+
+/* CustomSelect floating popup styling */
+.theme-active [role="listbox"] {
+  background: var(--theme-card-bg) !important;
+  border: var(--theme-card-border) !important;
+  border-radius: var(--theme-card-radius) !important;
+  box-shadow: var(--theme-card-shadow, 0 10px 25px -5px rgba(0, 0, 0, 0.1)) !important;
+  backdrop-filter: var(--theme-card-backdrop, none) !important;
+}
+
+.theme-active [role="option"]:hover:not([aria-disabled="true"]) {
+  background-color: var(--theme-accent-light) !important;
   color: var(--theme-text-primary) !important;
 }
 

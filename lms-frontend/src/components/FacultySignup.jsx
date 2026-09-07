@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { authAPI } from "../utils/api";
+import LmsLogo from "./common/LmsLogo";
 
 const FacultySignup = () => {
   const navigate = useNavigate();
@@ -12,12 +13,11 @@ const FacultySignup = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    department: "",
-    specialization: "",
-    qualification: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,15 +31,13 @@ const FacultySignup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate password match
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match!");
+      setError("Passwords do not match.");
       return;
     }
 
-    // Validate password length
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long!");
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long.");
       return;
     }
 
@@ -52,9 +50,6 @@ const FacultySignup = () => {
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
-        department: formData.department,
-        specialization: formData.specialization,
-        qualification: formData.qualification,
       });
 
       // Refresh user state from the auth context
@@ -71,232 +66,309 @@ const FacultySignup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 py-8">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-          </div>
-          <h2 className="text-3xl font-bold text-gray-800">Faculty Registration</h2>
-          <p className="text-gray-500 mt-2">Join as an instructor</p>
+    <div className="min-h-screen bg-[#EAEBEB] px-4 md:px-8 py-6 flex items-center justify-center">
+      <div className="max-w-6xl w-full mx-auto">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <Link to="/" className="flex items-center gap-3 group">
+            <LmsLogo size={38} className="transition-transform group-hover:scale-105" />
+            <span className="font-bold tracking-tight text-xl text-slate-900 group-hover:text-black transition-colors">
+              LMS Enterprise
+            </span>
+          </Link>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
-            {error}
-          </div>
-        )}
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Left marketing panel */}
+          <section className="lg:col-span-5 bg-[#C1F1C6] rounded-[2.5rem] p-10 md:p-12 flex flex-col justify-between overflow-hidden relative min-h-[480px] shadow-[0_10px_30px_-5px_rgba(0,0,0,0.04)]">
+            <div className="relative z-10 space-y-8">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-black/5 rounded-full text-xs font-bold uppercase tracking-wider text-black/75">
+                <span>👨‍🏫</span> Faculty Portal
+              </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                First Name
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-                placeholder="John"
-              />
+              <h1 className="font-serif text-4xl md:text-5xl leading-[1.1] text-black">
+                Empower learners across the globe.
+              </h1>
+
+              <div className="space-y-6 text-sm">
+                <div className="flex gap-4 items-start">
+                  <div className="w-12 h-12 bg-white/50 rounded-2xl flex items-center justify-center shrink-0">
+                    <span className="text-lg">🎓</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base">Course Management</h3>
+                    <p className="text-black/70 leading-relaxed">
+                      Publish lectures, organize structured modules, and manage course assets effortlessly.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className="w-12 h-12 bg-white/50 rounded-2xl flex items-center justify-center shrink-0">
+                    <span className="text-lg">📊</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base">In-Depth Analytics</h3>
+                    <p className="text-black/70 leading-relaxed">
+                      Track student progress, video watch times, and enrollment trends with real-time charts.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className="w-12 h-12 bg-white/50 rounded-2xl flex items-center justify-center shrink-0">
+                    <span className="text-lg">⚡</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base">AI-Powered Tools</h3>
+                    <p className="text-black/70 leading-relaxed">
+                      Leverage integrated RAG intelligence for automated document indexing and student support.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-                placeholder="Doe"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-              placeholder="john.doe@university.edu"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="department"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Department
-            </label>
-            <input
-              type="text"
-              id="department"
-              name="department"
-              value={formData.department}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-              placeholder="Computer Science"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="specialization"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Specialization
-              </label>
-              <input
-                type="text"
-                id="specialization"
-                name="specialization"
-                value={formData.specialization}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-                placeholder="Machine Learning"
-              />
+            <div className="mt-10 relative z-10">
+              <div className="flex -space-x-3 mb-3">
+                <div className="w-10 h-10 rounded-full border-2 border-[#C1F1C6] bg-gradient-to-br from-emerald-400 to-emerald-600" />
+                <div className="w-10 h-10 rounded-full border-2 border-[#C1F1C6] bg-gradient-to-br from-teal-400 to-teal-600" />
+                <div className="w-10 h-10 rounded-full border-2 border-[#C1F1C6] bg-gradient-to-br from-blue-400 to-indigo-600" />
+              </div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-black/45">
+                Join 500+ instructors teaching on LMS
+              </p>
             </div>
 
-            <div>
-              <label
-                htmlFor="qualification"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Qualification
-              </label>
-              <input
-                type="text"
-                id="qualification"
-                name="qualification"
-                value={formData.qualification}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-                placeholder="Ph.D."
-              />
+            <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-white/30 rounded-full blur-3xl" />
+          </section>
+
+          {/* Right form panel */}
+          <section className="lg:col-span-7 bg-[#F4F5F5] rounded-[2.5rem] p-10 md:p-16 flex flex-col justify-center shadow-[0_10px_30px_-5px_rgba(0,0,0,0.04)]">
+            <div className="max-w-md mx-auto w-full">
+              <div className="mb-8 text-center lg:text-left">
+                <h2 className="text-3xl font-bold mb-2 text-[#2D2D2D]">
+                  Faculty Registration
+                </h2>
+                <p className="text-sm text-[#666666]">
+                  Join as an instructor and start sharing your expertise.
+                </p>
+              </div>
+
+              {error && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="firstName"
+                      className="text-[11px] font-bold uppercase tracking-widest text-[#666666] ml-1"
+                    >
+                      First Name
+                    </label>
+                    <input
+                      id="firstName"
+                      name="firstName"
+                      type="text"
+                      required
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="John"
+                      className="w-full px-6 py-3.5 bg-white/70 border border-white rounded-2xl outline-none text-sm placeholder:text-[#666666]/60 focus:ring-2 focus:ring-[#BDE3FF] focus:border-[#BDE3FF] transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label
+                      htmlFor="lastName"
+                      className="text-[11px] font-bold uppercase tracking-widest text-[#666666] ml-1"
+                    >
+                      Last Name
+                    </label>
+                    <input
+                      id="lastName"
+                      name="lastName"
+                      type="text"
+                      required
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Doe"
+                      className="w-full px-6 py-3.5 bg-white/70 border border-white rounded-2xl outline-none text-sm placeholder:text-[#666666]/60 focus:ring-2 focus:ring-[#BDE3FF] focus:border-[#BDE3FF] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label
+                    htmlFor="email"
+                    className="text-[11px] font-bold uppercase tracking-widest text-[#666666] ml-1"
+                  >
+                    Institutional / Work Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="professor@university.edu"
+                    className="w-full px-6 py-3.5 bg-white/70 border border-white rounded-2xl outline-none text-sm placeholder:text-[#666666]/60 focus:ring-2 focus:ring-[#BDE3FF] focus:border-[#BDE3FF] transition-all"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="space-y-1">
+                  <label
+                    htmlFor="password"
+                    className="text-[11px] font-bold uppercase tracking-widest text-[#666666] ml-1"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className="w-full px-6 py-3.5 pr-12 bg-white/70 border border-white rounded-2xl outline-none text-sm placeholder:text-[#666666]/60 focus:ring-2 focus:ring-[#BDE3FF] focus:border-[#BDE3FF] transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#666666] hover:text-black"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-[#666666] ml-1 italic">
+                    Must be at least 8 characters with one special symbol.
+                  </p>
+                </div>
+
+                {/* Confirm password */}
+                <div className="space-y-1">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="text-[11px] font-bold uppercase tracking-widest text-[#666666] ml-1"
+                  >
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Repeat your password"
+                      className="w-full px-6 py-3.5 pr-12 bg-white/70 border border-white rounded-2xl outline-none text-sm placeholder:text-[#666666]/60 focus:ring-2 focus:ring-[#BDE3FF] focus:border-[#BDE3FF] transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#666666] hover:text-black"
+                    >
+                      {showConfirmPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 bg-[#BDE3FF] text-black font-bold rounded-2xl hover:brightness-95 hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {loading ? "Creating Faculty Account..." : "Register as Faculty"}
+                    {!loading && <span className="text-sm">→</span>}
+                  </button>
+                </div>
+
+                <div className="relative py-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-black/5" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-[#F4F5F5] px-4 text-[11px] font-bold text-[#666666] uppercase tracking-[0.2em]">
+                      or sign up with
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-center gap-3 py-3.5 bg-white border border-gray-200/80 rounded-2xl hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all duration-200 text-sm font-semibold text-slate-700 active:scale-[0.99] cursor-pointer"
+                  >
+                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                      />
+                    </svg>
+                    Continue with Google
+                  </button>
+                </div>
+              </form>
+
+              <div className="mt-8 text-center space-y-2">
+                <p className="text-sm text-[#666666]">
+                  Already have an account?
+                  <Link
+                    to="/login"
+                    className="text-black font-bold hover:underline underline-offset-4 ml-1"
+                  >
+                    Log in
+                  </Link>
+                </p>
+                <p className="text-sm text-[#666666]">
+                  Want to join as a student?
+                  <Link
+                    to="/signup"
+                    className="text-emerald-700 font-bold hover:underline underline-offset-4 ml-1"
+                  >
+                    Student Signup
+                  </Link>
+                </p>
+              </div>
             </div>
-          </div>
+          </section>
+        </main>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-              placeholder="Create a password"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition"
-              placeholder="Confirm your password"
-            />
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="terms"
-              required
-              className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-            />
-            <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-              I agree to the{" "}
-              <a href="#" className="text-emerald-600 hover:text-emerald-500">
-                Terms and Conditions
-              </a>
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-300 font-medium transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Creating Account..." : "Register as Faculty"}
-          </button>
-        </form>
-
-        <div className="mt-6 space-y-3">
-          <p className="text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="text-emerald-600 hover:text-emerald-500 font-medium"
-            >
-              Sign in
-            </Link>
+        <footer className="mt-6 text-center px-4">
+          <p className="text-[11px] text-[#666666]">
+            By signing up, you agree to our{" "}
+            <a href="#" className="underline">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="#" className="underline">
+              Privacy Policy
+            </a>
+            .
           </p>
-          <p className="text-center text-sm text-gray-600">
-            Want to join as a student?{" "}
-            <Link
-              to="/signup"
-              className="text-purple-600 hover:text-purple-500 font-medium"
-            >
-              Student Signup
-            </Link>
-          </p>
-        </div>
+        </footer>
       </div>
     </div>
   );

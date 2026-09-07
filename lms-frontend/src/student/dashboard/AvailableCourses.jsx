@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import studentApi from "../../utils/studentApi";
 import CourseContentPreview from "./CourseContentPreview";
+import CustomSelect from "../../components/common/CustomSelect";
 
 const COURSE_CATEGORIES = [
   { value: "", label: "All Categories" },
@@ -349,20 +350,12 @@ const AvailableCourses = ({ onEnrollSuccess }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Category
             </label>
-            <div className="relative">
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full appearance-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
-              >
-                {COURSE_CATEGORIES.map((cat) => (
-                  <option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <CustomSelect
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              options={COURSE_CATEGORIES}
+              className="w-full bg-gray-50 border border-gray-200 rounded-lg text-sm"
+            />
           </div>
 
           {/* Level Filter */}
@@ -370,20 +363,12 @@ const AvailableCourses = ({ onEnrollSuccess }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Level
             </label>
-            <div className="relative">
-              <select
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                className="w-full appearance-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
-              >
-                {COURSE_LEVELS.map((lvl) => (
-                  <option key={lvl.value} value={lvl.value}>
-                    {lvl.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <CustomSelect
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
+              options={COURSE_LEVELS}
+              className="w-full bg-gray-50 border border-gray-200 rounded-lg text-sm"
+            />
           </div>
 
           {/* Clear Filters */}

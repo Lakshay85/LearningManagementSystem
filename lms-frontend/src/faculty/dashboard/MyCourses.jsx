@@ -23,6 +23,7 @@ import {
   Globe,
 } from "lucide-react";
 import facultyApi from "../../utils/facultyApi";
+import CustomSelect from "../../components/common/CustomSelect";
 
 // Grid Pattern SVG component
 const GridPattern = () => (
@@ -479,19 +480,19 @@ function MyCourses({ setActiveTab, setEditingCourse }) {
             </div>
 
             {/* Status Filter */}
-            <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <select
+            <div className="w-48">
+              <CustomSelect
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="pl-10 pr-8 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none bg-white"
+                icon={Filter}
+                className="border border-gray-200 rounded-xl"
               >
                 <option value="all">All Status</option>
                 <option value="draft">Draft</option>
                 <option value="pending_review">Pending Review</option>
                 <option value="published">Published</option>
                 <option value="archived">Archived</option>
-              </select>
+              </CustomSelect>
             </div>
           </div>
 

@@ -17,6 +17,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import facultyApi from "../../utils/facultyApi";
+import CustomSelect from "../../components/common/CustomSelect";
 
 // Constants for validation
 const ALLOWED_DOCUMENT_TYPES = [
@@ -874,36 +875,26 @@ const CourseCreate = ({ setActiveTab, editingCourse, setEditingCourse }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Category
                 </label>
-                <select
+                <CustomSelect
                   name="category"
                   value={courseData.category}
                   onChange={handleCourseInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  {COURSE_CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
+                  options={COURSE_CATEGORIES}
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Level
                 </label>
-                <select
+                <CustomSelect
                   name="level"
                   value={courseData.level}
                   onChange={handleCourseInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  {COURSE_LEVELS.map((level) => (
-                    <option key={level.value} value={level.value}>
-                      {level.label}
-                    </option>
-                  ))}
-                </select>
+                  options={COURSE_LEVELS}
+                />
               </div>
             </div>
 
@@ -912,18 +903,17 @@ const CourseCreate = ({ setActiveTab, editingCourse, setEditingCourse }) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Visibility
               </label>
-              <select
+              <CustomSelect
                 name="visibility"
                 value={courseData.visibility}
                 onChange={handleCourseInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="unlisted">Unlisted (Accessible via link)</option>
-                <option value="private">
-                  Private (Enrolled students only)
-                </option>
-                <option value="public">Public (Everyone can see)</option>
-              </select>
+                options={[
+                  { value: "unlisted", label: "Unlisted (Accessible via link)" },
+                  { value: "private", label: "Private (Enrolled students only)" },
+                  { value: "public", label: "Public (Everyone can see)" },
+                ]}
+              />
             </div>
           </div>
         </div>

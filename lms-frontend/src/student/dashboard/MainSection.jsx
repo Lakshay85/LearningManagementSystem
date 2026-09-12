@@ -1,5 +1,6 @@
 import { useAuth } from "../../hooks/useAuth";
 import RecommendedVideos from "./RecommendedVideos";
+import LmsLogo from "../../components/common/LmsLogo";
 
 const MainSection = ({ onToggleNotifications }) => {
   const { user } = useAuth();
@@ -8,11 +9,14 @@ const MainSection = ({ onToggleNotifications }) => {
     <div className="max-w-7xl mx-auto font-sans">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
-          <p className="text-slate-500 mt-1">
-            Hello {user.firstName || "Alex"}, welcome back to your learning journey!
-          </p>
+        <div className="flex items-center gap-3.5">
+          <LmsLogo size={42} />
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Overview</h1>
+            <p className="text-slate-500 mt-1">
+              Hello {user.firstName || "Alex"}, welcome back to your learning journey!
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="relative hidden lg:block">

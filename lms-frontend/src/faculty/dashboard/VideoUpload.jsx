@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   Upload,
   X,
@@ -140,12 +140,11 @@ const VideoUpload = () => {
     const videoUrl = URL.createObjectURL(file);
     setVideoPreview(videoUrl);
 
-    // Get video duration
+    // Get video duration without revoking preview URL
     const video = document.createElement("video");
     video.preload = "metadata";
     video.onloadedmetadata = () => {
       setVideoDuration(video.duration);
-      URL.revokeObjectURL(video.src);
     };
     video.src = videoUrl;
 
@@ -216,6 +215,15 @@ const VideoUpload = () => {
     }
   }, [videoPreview]);
 
+  // Cleanup object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (videoPreview) {
+        URL.revokeObjectURL(videoPreview);
+      }
+    };
+  }, [videoPreview]);
+
   // Handle upload cancellation
   const handleCancelUpload = useCallback(() => {
     if (abortControllerRef.current) {
@@ -239,11 +247,12 @@ const VideoUpload = () => {
 
     try {
       const formDataToSend = new FormData();
+      formDataToSend.append("file", selectedFile.file);
       formDataToSend.append("video", selectedFile.file);
       formDataToSend.append("title", formData.title.trim());
-      formDataToSend.append("description", formData.description.trim());
-      formDataToSend.append("category", formData.category);
-      formDataToSend.append("visibility", formData.visibility);
+      formDataToSend.append("description", (formData.description || "").trim());
+      formDataToSend.append("category", formData.category || "other");
+      formDataToSend.append("visibility", formData.visibility || "private");
 
       await facultyApi.uploadVideo(
         formDataToSend,
@@ -421,8 +430,10 @@ const VideoUpload = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600 flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Uploading...
+                    <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+                    {uploadProgress < 100
+                      ? "Uploading video..."
+                      : "Processing & saving to cloud storage..."}
                   </span>
                   <span className="font-medium text-gray-900">
                     {uploadProgress}%
@@ -434,6 +445,11 @@ const VideoUpload = () => {
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
+                {uploadProgress === 100 && (
+                  <p className="text-xs text-gray-500 italic">
+                    Transferring to ImageKit CDN. This may take a moment for larger videos...
+                  </p>
+                )}
               </div>
             )}
 

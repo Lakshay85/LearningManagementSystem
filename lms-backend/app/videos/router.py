@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, Response, status, UploadFile, File, Form, Request
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi import APIRouter, Depends, HTTPException, Response, status, UploadFile, File, Form, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 import os
@@ -8,7 +8,7 @@ import mimetypes
 
 from app.database import get_db
 from app.auth.dependencies import get_current_user, get_current_user_optional, require_faculty
-from app.videos.schemas import UploadVideoSchema, UpdateVideoSchema, VideoQuerySchema
+from app.videos.schemas import UpdateVideoSchema, VideoQuerySchema
 from app.videos.service import VideoService
 
 router = APIRouter(prefix="/videos", tags=["Videos"])
@@ -30,7 +30,8 @@ async def range_generator(file_path: str, start: int, chunk_size: int):
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_video(
-    file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(None),
+    video: Optional[UploadFile] = File(None),
     title: str = Form(...),
     description: Optional[str] = Form(None),
     category: Optional[str] = Form(None),
@@ -38,6 +39,13 @@ async def upload_video(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_faculty)
 ):
+    upload_file = file or video
+    if not upload_file:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Video file is required (send as 'video' or 'file')"
+        )
+
     class TempDto:
         pass
     dto = TempDto()
@@ -46,13 +54,18 @@ async def upload_video(
     dto.category = category
     dto.visibility = visibility
 
-    file_buffer = await file.read()
-    video = await video_service.upload_video(
+    file_buffer = await upload_file.read()
+    guessed_type, _ = mimetypes.guess_type(upload_file.filename or "")
+    mime_type = upload_file.content_type or guessed_type or "video/mp4"
+    if mime_type == "application/octet-stream" and guessed_type:
+        mime_type = guessed_type
+
+    video_record = await video_service.upload_video(
         db=db,
         file_buffer=file_buffer,
-        file_name=file.filename or "video.mp4",
-        file_size=file.size or len(file_buffer),
-        file_mime_type=file.content_type or "video/mp4",
+        file_name=upload_file.filename or "video.mp4",
+        file_size=upload_file.size or len(file_buffer),
+        file_mime_type=mime_type,
         dto=dto,
         uploader_id=current_user["userId"]
     )
@@ -61,11 +74,11 @@ async def upload_video(
         "success": True,
         "message": "Video uploaded successfully",
         "data": {
-            "id": str(video.id),
-            "title": video.title,
-            "filename": video.storedFilename,
-            "size": float(video.fileSize),
-            "streamUrl": f"/videos/stream/{video.id}"
+            "id": str(video_record.id),
+            "title": video_record.title,
+            "filename": video_record.storedFilename,
+            "size": float(video_record.fileSize),
+            "streamUrl": f"/videos/stream/{video_record.id}"
         }
     }
 

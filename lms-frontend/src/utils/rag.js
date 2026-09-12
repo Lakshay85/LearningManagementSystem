@@ -23,6 +23,7 @@ const ragFetch = async (endpoint, options = {}) => {
   };
 
   const response = await fetch(`${RAG_API_URL}${endpoint}`, {
+    credentials: "include",
     ...options,
     headers,
   });
@@ -31,7 +32,11 @@ const ragFetch = async (endpoint, options = {}) => {
     const error = await response
       .json()
       .catch(() => ({ message: "Request failed" }));
-    throw new Error(error.message || `HTTP error ${response.status}`);
+    const errorMsg =
+      (typeof error?.detail === "string" ? error.detail : null) ||
+      error?.message ||
+      `HTTP error ${response.status}`;
+    throw new Error(errorMsg);
   }
 
   return response.json();
@@ -143,7 +148,7 @@ export const queryRagStream = ({
   onDone,
 }) => {
   const controller = new AbortController();
-  const token = localStorage.getItem("accessToken");
+  const token = getAccessToken();
 
   const headers = {
     "Content-Type": "application/json",
@@ -154,12 +159,18 @@ export const queryRagStream = ({
   fetch(`${RAG_API_URL}/v1/rag/query/stream`, {
     method: "POST",
     headers,
+    credentials: "include",
     body: JSON.stringify({ query, sessionId, topK, filters }),
     signal: controller.signal,
   })
     .then(async (response) => {
       if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
+        const errorData = await response.json().catch(() => null);
+        const errorMsg =
+          (typeof errorData?.detail === "string" ? errorData.detail : null) ||
+          errorData?.message ||
+          `HTTP error ${response.status}`;
+        throw new Error(errorMsg);
       }
 
       const reader = response.body.getReader();

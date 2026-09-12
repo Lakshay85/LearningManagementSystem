@@ -91,11 +91,26 @@ axiosInstance.interceptors.response.use(
 /**
  * Create standardized error response
  */
-const createErrorResponse = (error) => ({
-  status: error.response?.status || 500,
-  message: error.response?.data?.message || "An error occurred",
-  errors: error.response?.data?.errors || [],
-});
+const createErrorResponse = (error) => {
+  const data = error.response?.data;
+  let message = "An error occurred";
+  if (typeof data?.detail === "string") {
+    message = data.detail;
+  } else if (Array.isArray(data?.detail) && data.detail.length > 0) {
+    message = data.detail
+      .map((d) => (typeof d === "string" ? d : d.msg || `${d.loc?.slice(1).join(".") || "field"}: ${d.msg}`))
+      .join(", ");
+  } else if (data?.message) {
+    message = data.message;
+  } else if (error.message) {
+    message = error.message;
+  }
+  return {
+    status: error.response?.status || 500,
+    message,
+    errors: data?.errors || [],
+  };
+};
 
 /**
  * Handle authentication failure - clear state and redirect to login

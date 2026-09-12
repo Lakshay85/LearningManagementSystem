@@ -134,14 +134,20 @@ class ImageKitStorageProvider:
             folder = "/lms"
             file_name = parts[0]
 
-        # Use the v5 SDK upload API (expects bytes or file-like object)
-        result = self.imagekit.files.upload(
-            file=raw_bytes,
-            file_name=file_name,
-            folder=folder,
-            is_private_file=False,
-            use_unique_file_name=False,
-            overwrite_file=True,
+        # Run synchronous ImageKit upload in thread pool with 600s timeout for large videos
+        import asyncio
+        loop = asyncio.get_running_loop()
+        result = await loop.run_in_executor(
+            None,
+            lambda: self.imagekit.files.upload(
+                file=raw_bytes,
+                file_name=file_name,
+                folder=folder,
+                is_private_file=False,
+                use_unique_file_name=False,
+                overwrite_file=True,
+                timeout=600.0,
+            )
         )
 
         # v5 SDK returns a pydantic model, access attributes directly

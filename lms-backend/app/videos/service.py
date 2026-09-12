@@ -36,20 +36,40 @@ class VideoService:
         unique_name = generate_unique_filename(sanitized)
         storage_path = get_video_storage_path(unique_name)
 
+        # Parse category and visibility enums safely
+        category_val = VideoCategory.OTHER
+        if getattr(dto, "category", None):
+            try:
+                category_val = VideoCategory(str(dto.category).lower().strip())
+            except (ValueError, AttributeError):
+                category_val = VideoCategory.OTHER
+
+        visibility_val = VideoVisibility.PRIVATE
+        if getattr(dto, "visibility", None):
+            try:
+                visibility_val = VideoVisibility(str(dto.visibility).lower().strip())
+            except (ValueError, AttributeError):
+                visibility_val = VideoVisibility.PRIVATE
+
+        imagekit_file_id = None
         try:
             # Upload
             upload_result = await storage_service.upload(file_buffer, storage_path, file_mime_type)
 
             # Extract ImageKit metadata if available
-            imagekit_file_id = upload_result.get("fileId")
-            cdn_url = upload_result.get("cdnUrl")
+            if isinstance(upload_result, dict):
+                imagekit_file_id = upload_result.get("fileId")
+                cdn_url = upload_result.get("cdnUrl")
+            else:
+                imagekit_file_id = None
+                cdn_url = None
 
             # Save in database
             video = Video(
                 title=dto.title,
                 description=dto.description,
-                category=dto.category or VideoCategory.OTHER,
-                visibility=dto.visibility or VideoVisibility.PRIVATE,
+                category=category_val,
+                visibility=visibility_val,
                 status=VideoStatus.READY,
                 originalFilename=sanitized,
                 storedFilename=unique_name,
@@ -82,7 +102,9 @@ class VideoService:
         except Exception as e:
             # Clean up if save fails
             try:
-                if await storage_service.exists(storage_path):
+                if imagekit_file_id:
+                    await storage_service.delete_by_file_id(imagekit_file_id)
+                elif await storage_service.exists(storage_path):
                     await storage_service.delete(storage_path)
             except Exception as cleanup_err:
                 print(f"Cleanup failed: {str(cleanup_err)}")

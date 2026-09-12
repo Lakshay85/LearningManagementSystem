@@ -1,5 +1,6 @@
 import { useState } from "react";
 import LogoutModal from "../../components/common/LogoutModal";
+import LmsLogo from "../../components/common/LmsLogo";
 import {
   LayoutDashboard,
   Video,
@@ -87,13 +88,11 @@ const FacultySidebar = ({ activeTab, setActiveTab }) => {
         <div className={`flex items-center ${isExpanded ? "justify-between" : "flex-row-reverse justify-center gap-1"}`}>
           {/* Logo Container */}
           <div className={`flex items-center gap-3 overflow-hidden ${!isExpanded && "justify-center"}`}>
-            <div className={`${isExpanded ? "w-14 h-14" : "w-10 h-10"} bg-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300`}>
-              <BookOpen className={`${isExpanded ? "w-8 h-8" : "w-5 h-5"} text-white transition-all duration-300`} />
-            </div>
+            <LmsLogo size={isExpanded ? 38 : 32} className="transition-all duration-300" />
             {isExpanded && (
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">Faculty Portal</h3>
-                <p className="text-sm text-gray-500 truncate">Content Management</p>
+                <h3 className="font-semibold text-gray-900 truncate">LMS Enterprise</h3>
+                <p className="text-xs text-gray-500 truncate font-medium">Faculty Portal</p>
               </div>
             )}
           </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import LogoutModal from "../../components/common/LogoutModal";
+import LmsLogo from "../../components/common/LmsLogo";
 
 const Sidebar = ({
   activeView = "dashboard",
@@ -40,18 +41,13 @@ const Sidebar = ({
 
   return (
     <aside className="hidden md:flex flex-col w-72 bg-white border-r border-slate-200 p-6 flex-shrink-0 z-20 h-full">
-      <div className="flex items-center gap-3 mb-10 px-2">
-        <div
-          onClick={() => onViewChange("dashboard")}
-          className="size-10 rounded-xl bg-[#6366f1] flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 cursor-pointer hover:bg-[#4f46e5] transition-colors"
-        >
-          <span className="material-symbols-outlined text-[24px]">school</span>
-        </div>
-        <span
-          onClick={() => onViewChange("dashboard")}
-          className="text-xl font-bold tracking-tight text-slate-900 cursor-pointer hover:text-[#6366f1] transition-colors"
-        >
-          EduLearn
+      <div
+        onClick={() => onViewChange("dashboard")}
+        className="flex items-center gap-3 mb-10 px-2 cursor-pointer group"
+      >
+        <LmsLogo size={38} className="transition-transform group-hover:scale-105" />
+        <span className="text-xl font-bold tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
+          LMS Enterprise
         </span>
       </div>
       {/* Scrollable Menu Section */}

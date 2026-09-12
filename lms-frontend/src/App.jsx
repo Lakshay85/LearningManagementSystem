@@ -11,6 +11,7 @@ import FacultySignup from "./components/FacultySignup";
 import LandingPage from "./components/LandingPage";
 import StudentDashboard from "./student/dashboard/StudentDashboard";
 import FacultyDashboard from "./faculty/dashboard/FacultyDashboard";
+import LmsLogo from "./components/common/LmsLogo";
 
 /**
  * Loading component shown during auth check
@@ -18,8 +19,9 @@ import FacultyDashboard from "./faculty/dashboard/FacultyDashboard";
 const LoadingScreen = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-      <p className="text-gray-600 font-medium">Loading...</p>
+      <LmsLogo size={52} className="animate-pulse" />
+      <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <p className="text-gray-600 font-medium text-sm">Loading LMS Enterprise...</p>
     </div>
   </div>
 );

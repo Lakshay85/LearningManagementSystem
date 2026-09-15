@@ -15,6 +15,9 @@ class UpdateVideoSchema(BaseModel):
     visibility: Optional[VideoVisibility] = None
     status: Optional[VideoStatus] = None
 
+class UpdateVisibilitySchema(BaseModel):
+    visibility: VideoVisibility
+
 class VideoQuerySchema(BaseModel):
     page: int = Field(1, ge=1)
     limit: int = Field(10, ge=1, le=100)

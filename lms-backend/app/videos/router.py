@@ -8,7 +8,7 @@ import mimetypes
 
 from app.database import get_db
 from app.auth.dependencies import get_current_user, get_current_user_optional, require_faculty
-from app.videos.schemas import UpdateVideoSchema, VideoQuerySchema
+from app.videos.schemas import UpdateVideoSchema, UpdateVisibilitySchema, VideoQuerySchema
 from app.videos.service import VideoService
 
 router = APIRouter(prefix="/videos", tags=["Videos"])
@@ -322,6 +322,38 @@ async def update_video(
     return {
         "success": True,
         "message": "Video updated successfully",
+        "data": video
+    }
+
+
+@router.put("/{id}", status_code=status.HTTP_200_OK)
+async def put_update_video(
+    id: str,
+    dto: UpdateVideoSchema,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    video = await video_service.update_video(db, id, dto, current_user["userId"])
+    return {
+        "success": True,
+        "message": "Video updated successfully",
+        "data": video
+    }
+
+
+@router.patch("/{id}/visibility", status_code=status.HTTP_200_OK)
+async def update_video_visibility(
+    id: str,
+    dto: UpdateVisibilitySchema,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    video = await video_service.update_video(
+        db, id, UpdateVideoSchema(visibility=dto.visibility), current_user["userId"]
+    )
+    return {
+        "success": True,
+        "message": "Video visibility updated successfully",
         "data": video
     }
 

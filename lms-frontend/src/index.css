@@ -64,10 +64,27 @@ button:focus-visible {
   a:hover {
     color: #000000;
   }
+}
 
-  button {
-    background-color: #F4F5F5;
-  }
+/* Universal dropdown and select/option visibility styling */
+select {
+  cursor: pointer;
+  color: #1e293b;
+  background-color: #ffffff;
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 8px 12px !important;
+}
+
+select option:checked,
+select option:hover {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
 }
 
 /* Enhanced Landing Page Animations */

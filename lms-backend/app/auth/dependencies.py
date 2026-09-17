@@ -1,10 +1,13 @@
 from typing import List, Optional
+from uuid import UUID
 from fastapi import Request, Depends, HTTPException, status
 from jose import jwt, JWTError
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.models.models import Admin
 
 # Extractor functions
 def extract_access_token(request: Request) -> Optional[str]:
@@ -97,6 +100,36 @@ class RoleChecker:
 
 require_faculty = RoleChecker(["faculty", "teacher"])
 require_student = RoleChecker(["student"])
+require_admin = RoleChecker(["admin"])
+
+class PermissionChecker:
+    """Check if the current user (admin) has a specific permission."""
+    def __init__(self, required_permission: str):
+        self.required_permission = required_permission
+
+    async def __call__(self, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+        if current_user["role"] != "admin":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        
+        # Fetch admin record to check permissions
+        admin = await db.execute(
+            select(Admin).where(Admin.userId == UUID(current_user["userId"]))
+        )
+        admin_record = admin.scalar_one_or_none()
+        
+        if not admin_record:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin record not found")
+        
+        # Super admin (adminLevel == 'super') bypasses permission checks
+        if admin_record.adminLevel == "super":
+            return current_user
+            
+        permissions = admin_record.permissions or []
+        if self.required_permission not in permissions:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Missing permission: {self.required_permission}")
+        
+        return current_user
+
 
 async def get_refresh_token_user(
     request: Request,

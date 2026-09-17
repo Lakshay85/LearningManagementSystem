@@ -19,6 +19,7 @@ import {
   Loader2
 } from "lucide-react";
 import facultyApi from "../../../utils/facultyApi";
+import CustomSelect from "../../../components/common/CustomSelect";
 import QuizAIGenerator from "./QuizAIGenerator";
 
 export default function QuizManager({ setActiveTab, setEditingQuizId, setViewingQuizId }) {
@@ -207,17 +208,18 @@ export default function QuizManager({ setActiveTab, setEditingQuizId, setViewing
               ) : courses.length === 0 ? (
                 <div className="text-xs text-amber-600 font-medium">No courses found</div>
               ) : (
-                <select
+                <CustomSelect
                   value={selectedCourseId}
                   onChange={(e) => setSelectedCourseId(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs font-semibold text-gray-800 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                  size="sm"
+                  className="bg-gray-50 border-gray-200"
                 >
                   {courses.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.title}
                     </option>
                   ))}
-                </select>
+                </CustomSelect>
               )}
             </div>
           </div>

@@ -2,6 +2,11 @@ import json
 import httpx
 import asyncio
 from typing import List, Dict, Any, Optional, AsyncGenerator
+from datetime import datetime
+from uuid import UUID
+from fastapi import HTTPException
+from sqlalchemy import select, func
+from sqlalchemy.ext.asyncio import AsyncSession
 from openai import AsyncOpenAI
 from groq import AsyncGroq
 import google.generativeai as genai
@@ -495,3 +500,89 @@ class EmbeddingProviderManager:
                 self.consecutive_failures = 0
                 return await self.fallback.embed_batch(texts)
             raise e
+
+
+class UsageTracker:
+    """Logs LLM usage and enforces per-user quotas."""
+
+    @staticmethod
+    async def check_quota(user_id: Optional[str], db: AsyncSession) -> bool:
+        """Returns True if user is within quota, raises 429 if exceeded."""
+        if not user_id:
+            return True
+        try:
+            uid = UUID(str(user_id))
+        except (ValueError, TypeError):
+            return True
+
+        from app.models.models import User, LLMUsageLog
+
+        user = await db.get(User, uid)
+        if not user:
+            return True
+
+        # Check daily limit
+        if user.llmDailyLimit is not None and user.llmDailyLimit > 0:
+            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            daily_count = await db.execute(
+                select(func.count(LLMUsageLog.id))
+                .where(LLMUsageLog.userId == uid)
+                .where(LLMUsageLog.createdAt >= today_start)
+            )
+            count = daily_count.scalar() or 0
+            if count >= user.llmDailyLimit:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Daily LLM limit reached ({user.llmDailyLimit} calls/day). Please contact your administrator."
+                )
+
+        # Check monthly limit
+        if user.llmMonthlyLimit is not None and user.llmMonthlyLimit > 0:
+            month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            monthly_count = await db.execute(
+                select(func.count(LLMUsageLog.id))
+                .where(LLMUsageLog.userId == uid)
+                .where(LLMUsageLog.createdAt >= month_start)
+            )
+            count = monthly_count.scalar() or 0
+            if count >= user.llmMonthlyLimit:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Monthly LLM limit reached ({user.llmMonthlyLimit} calls/month). Please contact your administrator."
+                )
+
+        return True
+
+    @staticmethod
+    async def log_usage(
+        user_id: Optional[str],
+        feature: str,
+        model: Optional[str],
+        usage: Optional[TokenUsage],
+        db: AsyncSession
+    ):
+        """Record an LLM call in the usage log."""
+        if not user_id:
+            return
+        try:
+            uid = UUID(str(user_id))
+        except (ValueError, TypeError):
+            return
+
+        from app.models.models import LLMUsageLog
+
+        log = LLMUsageLog(
+            userId=uid,
+            feature=feature,
+            model=model or "default",
+            promptTokens=usage.promptTokens if usage else 0,
+            completionTokens=usage.completionTokens if usage else 0,
+            totalTokens=usage.totalTokens if usage else 0,
+        )
+        db.add(log)
+        try:
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            print(f"⚠️ Failed to record LLM usage: {str(e)}")
+

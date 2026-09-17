@@ -11,6 +11,7 @@ import {
   Loader2
 } from "lucide-react";
 import facultyApi from "../../../utils/facultyApi";
+import CustomSelect from "../../../components/common/CustomSelect";
 
 export default function QuizAIGenerator({ isOpen, onClose, onSuccess, initialCourseId = null, courses = [] }) {
   const [selectedCourseId, setSelectedCourseId] = useState(initialCourseId || "");
@@ -168,19 +169,19 @@ export default function QuizAIGenerator({ isOpen, onClose, onSuccess, initialCou
             <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
               Target Course *
             </label>
-            <select
+            <CustomSelect
               value={selectedCourseId}
               onChange={(e) => setSelectedCourseId(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm bg-white"
+              placeholder="Select a course"
+              className="bg-white border-gray-200"
               required
             >
-              <option value="" disabled>Select a course</option>
               {courses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.title}
                 </option>
               ))}
-            </select>
+            </CustomSelect>
           </div>
 
           {/* Title & Description */}

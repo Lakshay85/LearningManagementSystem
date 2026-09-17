@@ -51,6 +51,8 @@ class User(Base):
     preferredLanguage = Column(String, nullable=True)
     timezone = Column(String, nullable=True)
     bio = Column(Text, nullable=True)
+    llmDailyLimit = Column(Integer, nullable=True, default=None)    # None = unlimited
+    llmMonthlyLimit = Column(Integer, nullable=True, default=None)  # None = unlimited
     createdAt = Column(DateTime, server_default=func.now())
     updatedAt = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
@@ -424,3 +426,47 @@ class NotificationPreference(Base):
     updatedAt = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
     user = orm_relationship("User")
+
+
+class LLMUsageLog(Base):
+    __tablename__ = 'llm_usage_logs'
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    userId = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    feature = Column(String(50), nullable=False)     # 'rag_chat', 'quiz_generation', 'chat_summary'
+    model = Column(String(100), nullable=True)        # 'qwen/qwen3.8-27b'
+    promptTokens = Column(Integer, default=0)
+    completionTokens = Column(Integer, default=0)
+    totalTokens = Column(Integer, default=0)
+    createdAt = Column(DateTime, server_default=func.now(), index=True)
+
+    user = orm_relationship("User")
+
+
+class AuditLog(Base):
+    __tablename__ = 'audit_logs'
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    actorId = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='SET NULL'), nullable=True, index=True)
+    action = Column(String(50), nullable=False, index=True)
+    targetType = Column(String(50), nullable=True)   # 'user', 'course', 'quiz', 'system'
+    targetId = Column(String, nullable=True)
+    details = Column(JSONB, nullable=True)            # { before: {...}, after: {...} }
+    ipAddress = Column(String, nullable=True)
+    createdAt = Column(DateTime, server_default=func.now(), index=True)
+
+    actor = orm_relationship("User")
+
+
+class SystemSetting(Base):
+    __tablename__ = 'system_settings'
+    __table_args__ = {'extend_existing': True}
+
+    key = Column(String(100), primary_key=True)
+    value = Column(JSONB, nullable=False)
+    description = Column(Text, nullable=True)
+    updatedBy = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    updatedAt = Column(DateTime, server_default=func.now(), onupdate=func.now())
+

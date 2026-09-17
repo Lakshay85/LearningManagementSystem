@@ -122,3 +122,47 @@ class NotificationReferenceType(str, Enum):
     DOCUMENT = 'document'
     USER = 'user'
     ENROLLMENT = 'enrollment'
+
+class Permission(str, Enum):
+    # User management
+    USERS_VIEW = 'users.view'
+    USERS_MANAGE = 'users.manage'          # create, edit, activate/deactivate
+    USERS_DELETE = 'users.delete'
+    
+    # Course oversight
+    COURSES_VIEW_ALL = 'courses.view_all'  # see all faculty courses
+    COURSES_MANAGE = 'courses.manage'      # unpublish/flag courses
+    
+    # Content oversight
+    CONTENT_VIEW_ALL = 'content.view_all'  # see all docs/videos
+    CONTENT_MANAGE = 'content.manage'      # remove/flag content
+    
+    # Quiz oversight
+    QUIZZES_VIEW_ALL = 'quizzes.view_all'
+    QUIZZES_MANAGE = 'quizzes.manage'
+    
+    # LLM controls
+    LLM_VIEW_USAGE = 'llm.view_usage'     # view usage analytics
+    LLM_CONFIGURE = 'llm.configure'       # set per-user limits
+    
+    # System settings
+    SYSTEM_SETTINGS = 'system.settings'    # global platform config
+    AUDIT_LOGS_VIEW = 'audit.logs_view'    # view audit trail
+    
+    # Admin management
+    ADMIN_MANAGE = 'admin.manage'          # create/modify other admins
+
+class AuditAction(str, Enum):
+    USER_CREATED = 'user.created'
+    USER_UPDATED = 'user.updated'
+    USER_ACTIVATED = 'user.activated'
+    USER_DEACTIVATED = 'user.deactivated'
+    USER_DELETED = 'user.deleted'
+    USER_ROLE_CHANGED = 'user.role_changed'
+    LLM_LIMIT_CHANGED = 'llm.limit_changed'
+    COURSE_UNPUBLISHED = 'course.unpublished'
+    CONTENT_REMOVED = 'content.removed'
+    QUIZ_REMOVED = 'quiz.removed'
+    SYSTEM_SETTING_CHANGED = 'system.setting_changed'
+    ADMIN_LOGIN = 'admin.login'
+

@@ -23,6 +23,8 @@ const CustomSelect = ({
   id,
   required = false,
   icon: Icon,
+  size = "md", // "sm" | "md" | "lg"
+  menuClassName = "",
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -149,10 +151,22 @@ const CustomSelect = ({
     }
   };
 
+  // Detect custom styling passed in className
+  const hasCustomBg = className.includes("bg-");
+  const hasCustomText = className.includes("text-");
+  const hasCustomPadding = className.includes("py-") || className.includes("px-");
+
+  const sizeClasses =
+    size === "sm"
+      ? "px-2.5 py-1 text-xs rounded-lg"
+      : size === "lg"
+      ? "px-4 py-3 text-base rounded-2xl"
+      : "px-3.5 py-2 text-xs rounded-xl";
+
   return (
     <div
       ref={containerRef}
-      className={`relative inline-block w-full text-left ${isOpen ? "z-40" : ""}`}
+      className={`relative inline-block w-full text-left ${isOpen ? "z-50" : ""}`}
       {...props}
     >
       {/* Hidden input for HTML form compatibility */}
@@ -172,10 +186,12 @@ const CustomSelect = ({
         onKeyDown={handleKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm transition-all duration-200 outline-none select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+        className={`w-full flex items-center justify-between gap-2 border border-slate-200 transition-all duration-150 outline-none select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+          !hasCustomPadding ? sizeClasses : ""
+        } ${className} ${isOpen ? "ring-2 ring-indigo-500/20 border-indigo-500" : ""}`}
         style={{
-          background: "var(--theme-card-bg, #ffffff)",
-          color: "var(--theme-text-primary, #1e293b)",
+          ...(!hasCustomBg ? { background: "var(--theme-card-bg, #ffffff)", backgroundColor: "#ffffff" } : {}),
+          ...(!hasCustomText ? { color: "var(--theme-text-primary, #1e293b)" } : {}),
           fontFamily: "var(--theme-font-body, inherit)",
         }}
       >
@@ -184,7 +200,7 @@ const CustomSelect = ({
           <span className="truncate font-medium">{displayLabel}</span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 shrink-0 opacity-60 transition-transform duration-200 ${
+          className={`w-3.5 h-3.5 shrink-0 opacity-60 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -194,21 +210,17 @@ const CustomSelect = ({
       {isOpen && (
         <div
           role="listbox"
-          className={`absolute left-0 right-0 z-50 p-1.5 max-h-64 overflow-y-auto shadow-2xl transition-all duration-150 animate-in fade-in zoom-in-95 ${
+          className={`absolute left-0 z-[100] min-w-full w-max max-w-xs p-1 max-h-60 overflow-y-auto shadow-xl rounded-xl border border-slate-200 bg-white transition-all duration-150 ${
             openUpward ? "bottom-full mb-1.5" : "top-full mt-1.5"
-          }`}
+          } ${menuClassName}`}
           style={{
-            background: "var(--theme-card-bg, #ffffff)",
-            border: "var(--theme-card-border, 1px solid #e2e8f0)",
-            borderRadius: "var(--theme-card-radius, 1rem)",
-            boxShadow:
-              "var(--theme-card-shadow, 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1))",
-            backdropFilter: "var(--theme-card-backdrop, none)",
-            fontFamily: "var(--theme-font-body, inherit)",
+            backgroundColor: "#ffffff",
+            background: "#ffffff",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)",
           }}
         >
           {options.length === 0 ? (
-            <div className="px-4 py-3 text-xs text-center text-gray-400">
+            <div className="px-3 py-2 text-xs text-center text-slate-400">
               No options available
             </div>
           ) : (
@@ -222,33 +234,18 @@ const CustomSelect = ({
                   aria-disabled={opt.disabled ? "true" : undefined}
                   title={typeof opt.label === "string" ? opt.label : undefined}
                   onClick={() => !opt.disabled && handleSelect(opt.value)}
-                  className={`flex items-center justify-between px-3.5 py-2.5 my-0.5 text-sm rounded-xl cursor-pointer transition-all duration-150 ${
-                    opt.disabled ? "opacity-40 cursor-not-allowed" : ""
+                  className={`flex items-center justify-between px-3 py-2 my-0.5 text-xs rounded-lg cursor-pointer transition-colors duration-100 ${
+                    opt.disabled
+                      ? "opacity-40 cursor-not-allowed text-slate-300"
+                      : isSelected
+                      ? "bg-indigo-50 text-indigo-700 font-semibold"
+                      : "text-slate-800 hover:bg-slate-100 font-medium"
                   }`}
-                  style={{
-                    color: "var(--theme-text-primary, #1e293b)",
-                    backgroundColor: isSelected
-                      ? "var(--theme-accent-light, rgba(16, 185, 129, 0.12))"
-                      : "transparent",
-                    fontWeight: isSelected ? "600" : "400",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!opt.disabled && !isSelected) {
-                      e.currentTarget.style.backgroundColor =
-                        "var(--theme-accent-light, rgba(0, 0, 0, 0.05))";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!opt.disabled && !isSelected) {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }
-                  }}
                 >
                   <span className="truncate">{opt.label}</span>
                   {isSelected && (
                     <Check
-                      className="w-4 h-4 shrink-0 ml-2"
-                      style={{ color: "var(--theme-accent, #10b981)" }}
+                      className="w-3.5 h-3.5 shrink-0 ml-2 text-indigo-600"
                     />
                   )}
                 </div>

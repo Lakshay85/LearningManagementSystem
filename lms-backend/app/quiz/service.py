@@ -15,6 +15,7 @@ from app.quiz.schemas import (
     CreateQuestionSchema, UpdateQuestionSchema, SubmitQuizSchema
 )
 from app.quiz.ai_generator import quiz_ai_generator
+from app.llm.providers import UsageTracker, TokenUsage
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,9 @@ class QuizService:
         if not course:
             raise HTTPException(status_code=404, detail="Course not found")
 
+        # Check user's LLM quota
+        await UsageTracker.check_quota(instructor_id, db)
+
         # Call AI generator
         questions_data = await quiz_ai_generator.generate_questions(
             course_title=course.title,
@@ -92,6 +96,20 @@ class QuizService:
             document_ids=dto.documentIds,
             course_id=str(course_uuid)
         )
+
+        # Log LLM usage
+        try:
+            prompt_tok = dto.numberOfQuestions * 150
+            comp_tok = len(questions_data) * 200
+            await UsageTracker.log_usage(
+                user_id=instructor_id,
+                feature="quiz_generation",
+                model="qwen/qwen3.8-27b",
+                usage=TokenUsage(prompt_tok, comp_tok, prompt_tok + comp_tok),
+                db=db
+            )
+        except Exception as log_err:
+            logger.warning(f"Failed to record quiz LLM usage: {log_err}")
 
         quiz = Quiz(
             courseId=course_uuid,

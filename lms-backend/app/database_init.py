@@ -49,6 +49,18 @@ CREATE INDEX IF NOT EXISTS quiz_submissions_quiz_student_idx ON quiz_submissions
 -- Course contents quiz column migration
 ALTER TABLE course_contents ADD COLUMN IF NOT EXISTS "quizId" UUID REFERENCES quizzes(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS course_contents_quiz_id_idx ON course_contents("quizId");
+
+-- User LLM limit columns
+ALTER TABLE users ADD COLUMN IF NOT EXISTS "llmDailyLimit" INTEGER;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS "llmMonthlyLimit" INTEGER;
+
+-- LLM usage log indexes
+CREATE INDEX IF NOT EXISTS llm_usage_logs_user_created_idx ON llm_usage_logs("userId", "createdAt");
+CREATE INDEX IF NOT EXISTS llm_usage_logs_feature_idx ON llm_usage_logs(feature);
+
+-- Audit log indexes
+CREATE INDEX IF NOT EXISTS audit_logs_actor_created_idx ON audit_logs("actorId", "createdAt");
+CREATE INDEX IF NOT EXISTS audit_logs_action_idx ON audit_logs(action);
 """
 
 async def init_database():

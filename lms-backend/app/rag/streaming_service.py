@@ -4,12 +4,14 @@ import time
 import os
 from typing import AsyncGenerator, Optional, Dict, Any
 
+from fastapi import HTTPException
 from app.config import settings
+from app.database import AsyncSessionLocal
 from app.rag.db_service import rag_db_service
 from app.chat.service import chat_memory_service
 from app.rag.ingestion.embedder import Embedder
 from app.rag.structure.smart_retriever import SmartRetriever
-from app.llm.providers import LLMProviderManager
+from app.llm.providers import LLMProviderManager, UsageTracker, TokenUsage
 
 from app.intent.service import (
     intent_detection_service,
@@ -80,7 +82,16 @@ class RagStreamingService:
 
         filters = filters or {}
         session_id = filters.get("sessionId")
+        user_id = filters.get("userId")
         full_response = ""
+
+        if user_id:
+            try:
+                async with AsyncSessionLocal() as session:
+                    await UsageTracker.check_quota(user_id, session)
+            except HTTPException as e:
+                yield format_sse("error", {"message": e.detail, "status": e.status_code})
+                return
 
         try:
             print(f"\n{'='*60}")
@@ -196,6 +207,23 @@ class RagStreamingService:
 
             print("✅ Streaming complete")
             await self.persist_assistant_message(session_id, full_response)
+
+            if user_id:
+                try:
+                    async with AsyncSessionLocal() as session:
+                        model_name = getattr(self.llm_manager.current_provider, 'model', 'groq')
+                        prompt_tok = self.llm_manager.current_provider.estimate_tokens(prompt)
+                        comp_tok = self.llm_manager.current_provider.estimate_tokens(full_response)
+                        await UsageTracker.log_usage(
+                            user_id=user_id,
+                            feature="rag_chat",
+                            model=model_name,
+                            usage=TokenUsage(prompt_tok, comp_tok, prompt_tok + comp_tok),
+                            db=session
+                        )
+                except Exception as log_err:
+                    print(f"⚠️ Failed to log LLM usage for RAG: {log_err}")
+
             yield format_sse("done", {"success": True})
 
         except Exception as e:

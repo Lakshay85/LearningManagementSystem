@@ -23,11 +23,14 @@ async def query_stream(dto: QueryDto, current_user: Optional[dict] = Depends(get
 
     # Validate session ownership if sessionId is provided
     session_id = dto.sessionId or (dto.filters.get("sessionId") if dto.filters else None)
+    if not dto.filters:
+        dto.filters = {}
+    if user_id:
+        dto.filters["userId"] = user_id
+
     if session_id:
         try:
             validated_session_id = await rag_service.validate_session_ownership(session_id, user_id)
-            if not dto.filters:
-                dto.filters = {}
             dto.filters["sessionId"] = validated_session_id
         except PermissionError as e:
             raise HTTPException(status_code=403, detail=str(e))

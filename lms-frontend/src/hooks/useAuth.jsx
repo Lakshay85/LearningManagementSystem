@@ -65,6 +65,9 @@ export const AuthProvider = ({ children }) => {
     const getDashboardPath = useCallback(() => {
         if (!user) return "/login";
         const role = user.role;
+        if (role === "admin") {
+            return "/admin/dashboard";
+        }
         if (role === "teacher" || role === "faculty") {
             return "/faculty/dashboard";
         }

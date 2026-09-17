@@ -11,6 +11,7 @@ import FacultySignup from "./components/FacultySignup";
 import LandingPage from "./components/LandingPage";
 import StudentDashboard from "./student/dashboard/StudentDashboard";
 import FacultyDashboard from "./faculty/dashboard/FacultyDashboard";
+import AdminDashboard from "./admin/dashboard/AdminDashboard";
 import LmsLogo from "./components/common/LmsLogo";
 
 /**
@@ -41,6 +42,9 @@ const StudentRoute = ({ children }) => {
   }
 
   const role = user?.role;
+  if (role === "admin") {
+    return <Navigate to="/admin/dashboard" />;
+  }
   if (role === "teacher" || role === "faculty") {
     return <Navigate to="/faculty/dashboard" />;
   }
@@ -63,7 +67,35 @@ const FacultyRoute = ({ children }) => {
   }
 
   const role = user?.role;
+  if (role === "admin") {
+    return <Navigate to="/admin/dashboard" />;
+  }
   if (role !== "teacher" && role !== "faculty") {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return children;
+};
+
+/**
+ * Protected route wrapper for admins
+ */
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  const role = user?.role;
+  if (role !== "admin") {
+    if (role === "teacher" || role === "faculty") {
+      return <Navigate to="/faculty/dashboard" />;
+    }
     return <Navigate to="/dashboard" />;
   }
 
@@ -139,6 +171,14 @@ const AppRoutes = () => {
           <FacultyRoute>
             <FacultyDashboard />
           </FacultyRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
         }
       />
     </Routes>

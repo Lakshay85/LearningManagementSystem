@@ -59,6 +59,7 @@ class CreateContentSchema(BaseModel):
     isRequired: Optional[bool] = None
     estimatedMinutes: Optional[int] = None
     videoId: Optional[str] = None
+    quizId: Optional[str] = None
     textContent: Optional[str] = None
 
 class UploadDocumentSchema(BaseModel):

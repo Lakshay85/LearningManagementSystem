@@ -17,9 +17,7 @@ const Sidebar = ({
   const menuItems = [
     { icon: "dashboard", label: "Dashboard", view: "dashboard" },
     { icon: "explore", label: "Browse Courses", view: "courses" },
-    // { icon: "co_present", label: "Private Class", view: "private-class" },
-    // { icon: "quiz", label: "Quiz", view: "quiz" },
-    // { icon: "edit_note", label: "Smart Notes", view: "smart-notes" },
+    { icon: "quiz", label: "Quiz", view: "quiz" },
   ];
 
   // Get course category color

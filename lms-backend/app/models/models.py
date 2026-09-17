@@ -11,7 +11,7 @@ from app.models.enums import (
     CourseCategory, CourseLevel, CourseStatus, CourseVisibility,
     ContentType, DocumentType, EnrollmentStatus, VideoStatus,
     VideoVisibility, VideoCategory, DocumentVisibility,
-    NotificationType, NotificationReferenceType
+    NotificationType, NotificationReferenceType, QuizStatus
 )
 
 enum_val = lambda x: [item.value for item in x]
@@ -252,6 +252,77 @@ class CourseSection(Base):
     )
 
 
+class Quiz(Base):
+    __tablename__ = 'quizzes'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    courseId = Column(UUID(as_uuid=True), ForeignKey('courses.id', ondelete='CASCADE'), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(String(20), default=QuizStatus.DRAFT.value, nullable=False, index=True)
+    timeLimitMinutes = Column(Integer, nullable=True)
+    totalQuestions = Column(Integer, default=0)
+    passingScore = Column(Integer, nullable=True)
+    createdBy = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    publishedAt = Column(DateTime, nullable=True)
+    createdAt = Column(DateTime, server_default=func.now())
+    updatedAt = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    course = orm_relationship("Course")
+    creator = orm_relationship("User")
+    questions = orm_relationship("QuizQuestion", back_populates="quiz", cascade="all, delete-orphan", order_by="QuizQuestion.order")
+    submissions = orm_relationship("QuizSubmission", back_populates="quiz", cascade="all, delete-orphan")
+
+    __table_args__ = (
+        Index('ix_quizzes_courseId_status', 'courseId', 'status'),
+        {'extend_existing': True}
+    )
+
+
+class QuizQuestion(Base):
+    __tablename__ = 'quiz_questions'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    quizId = Column(UUID(as_uuid=True), ForeignKey('quizzes.id', ondelete='CASCADE'), nullable=False, index=True)
+    questionText = Column(Text, nullable=False)
+    options = Column(JSONB, nullable=False)
+    correctAnswer = Column(String, nullable=False)
+    explanation = Column(Text, nullable=True)
+    order = Column(Integer, nullable=False, default=0)
+    points = Column(Integer, default=1)
+    createdAt = Column(DateTime, server_default=func.now())
+    updatedAt = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    quiz = orm_relationship("Quiz", back_populates="questions")
+
+    __table_args__ = (
+        Index('ix_quiz_questions_quizId_order', 'quizId', 'order'),
+        {'extend_existing': True}
+    )
+
+
+class QuizSubmission(Base):
+    __tablename__ = 'quiz_submissions'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    quizId = Column(UUID(as_uuid=True), ForeignKey('quizzes.id', ondelete='CASCADE'), nullable=False, index=True)
+    studentId = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    score = Column(Numeric(5, 2), nullable=False)
+    totalCorrect = Column(Integer, nullable=False)
+    totalQuestions = Column(Integer, nullable=False)
+    answers = Column(JSONB, nullable=False)
+    submittedAt = Column(DateTime, server_default=func.now())
+
+    quiz = orm_relationship("Quiz", back_populates="submissions")
+    student = orm_relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint('quizId', 'studentId', name='uq_quiz_submissions_quiz_student'),
+        Index('ix_quiz_submissions_quizId_studentId', 'quizId', 'studentId'),
+        {'extend_existing': True}
+    )
+
+
 class CourseContent(Base):
     __tablename__ = 'course_contents'
 
@@ -265,6 +336,7 @@ class CourseContent(Base):
     estimatedMinutes = Column(Integer, nullable=True)
     videoId = Column(UUID(as_uuid=True), ForeignKey('videos.id', ondelete='SET NULL'), nullable=True)
     documentId = Column(UUID(as_uuid=True), ForeignKey('documents.id', ondelete='SET NULL'), nullable=True)
+    quizId = Column(UUID(as_uuid=True), ForeignKey('quizzes.id', ondelete='SET NULL'), nullable=True)
     textContent = Column(Text, nullable=True)
     sectionId = Column(UUID(as_uuid=True), ForeignKey('course_sections.id', ondelete='CASCADE'), nullable=False, index=True)
     courseId = Column(UUID(as_uuid=True), ForeignKey('courses.id', ondelete='CASCADE'), nullable=False, index=True)
@@ -274,10 +346,12 @@ class CourseContent(Base):
     section = orm_relationship("CourseSection", back_populates="contents")
     video = orm_relationship("Video")
     document = orm_relationship("Document")
+    quiz = orm_relationship("Quiz")
     course = orm_relationship("Course")
 
     __table_args__ = (
         Index('ix_course_contents_sectionId_order', 'sectionId', 'order'),
+        Index('ix_course_contents_quizId', 'quizId'),
         {'extend_existing': True}
     )
 

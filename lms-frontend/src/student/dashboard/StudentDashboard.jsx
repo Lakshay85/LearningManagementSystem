@@ -6,7 +6,7 @@ import MainSection from "./MainSection";
 import AvailableCourses from "./AvailableCourses";
 import CourseViewer from "./CourseViewer";
 import StudentSetting from "./StudentSetting";
-import Quiz from "./Quiz";
+import StudentQuizHub from "./StudentQuizHub";
 import NotificationSection from "../../components/NotificationSection";
 import studentApi from "../../utils/studentApi";
 
@@ -78,7 +78,7 @@ function StudentDashboard() {
       case "settings":
         return <StudentSetting />;
       case "quiz":
-        return <Quiz />;
+        return <StudentQuizHub />;
       case "course-viewer":
         return selectedEnrolledCourse ? (
           <CourseViewer

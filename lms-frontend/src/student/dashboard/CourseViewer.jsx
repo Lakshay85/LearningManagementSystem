@@ -22,9 +22,12 @@ import {
   SkipForward,
   MessageSquare,
   X,
+  ClipboardCheck,
 } from "lucide-react";
 import studentApi from "../../utils/studentApi";
 import ChatInterface from "../components/ChatInterface";
+import Quiz from "./Quiz";
+import CourseQuizList from "./CourseQuizList";
 
 const ContentTypeIcon = ({ type, className = "w-5 h-5" }) => {
   switch (type) {
@@ -34,6 +37,8 @@ const ContentTypeIcon = ({ type, className = "w-5 h-5" }) => {
       return <FileText className={`${className} text-green-500`} />;
     case "text":
       return <BookOpen className={`${className} text-purple-500`} />;
+    case "quiz":
+      return <ClipboardCheck className={`${className} text-amber-500`} />;
     default:
       return <File className={`${className} text-gray-500`} />;
   }
@@ -608,6 +613,7 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
   const [error, setError] = useState(null);
   const [selectedContent, setSelectedContent] = useState(null);
   const [showChat, setShowChat] = useState(false);
+  const [showQuizzesView, setShowQuizzesView] = useState(false);
 
   useEffect(() => {
     const fetchCourseContent = async () => {
@@ -615,6 +621,7 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
         setLoading(true);
         // Reset selected content when course changes
         setSelectedContent(null);
+        setShowQuizzesView(false);
         const data = await studentApi.getEnrolledCourseContent(
           initialCourse.courseId || initialCourse.id
         );
@@ -633,6 +640,7 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
 
   const handleSelectContent = (content) => {
     setSelectedContent(content);
+    setShowQuizzesView(false);
   };
 
   const renderContentViewer = () => {
@@ -664,6 +672,14 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
         );
       case "text":
         return <TextContent content={selectedContent} />;
+      case "quiz":
+        return (
+          <div className="h-full overflow-y-auto p-4 bg-gray-50">
+            <Quiz
+              quizId={selectedContent.quizId}
+            />
+          </div>
+        );
       default:
         return (
           <div className="h-full flex items-center justify-center bg-gray-100">
@@ -721,6 +737,20 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => {
+              setShowQuizzesView(!showQuizzesView);
+              if (!showQuizzesView) setSelectedContent(null);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              showQuizzesView
+                ? 'bg-amber-500 text-white shadow-sm'
+                : 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+            }`}
+          >
+            <ClipboardCheck className="w-4 h-4" />
+            <span>Course Quizzes</span>
+          </button>
+          <button
             onClick={() => setShowChat(!showChat)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all transform hover:scale-105 ${showChat
               ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
@@ -736,7 +766,18 @@ const CourseViewer = ({ course: initialCourse, onBack }) => {
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Content Viewer */}
-        <div className="flex-1 overflow-hidden">{renderContentViewer()}</div>
+        <div className="flex-1 overflow-hidden">
+          {showQuizzesView ? (
+            <div className="h-full overflow-y-auto p-4 bg-gray-50">
+              <CourseQuizList
+                courseId={courseData?.id || initialCourse?.courseId || initialCourse?.id}
+                courseTitle={courseData?.title}
+              />
+            </div>
+          ) : (
+            renderContentViewer()
+          )}
+        </div>
 
         {/* Course Sidebar */}
         <div className="w-80 bg-white overflow-y-auto flex-shrink-0">

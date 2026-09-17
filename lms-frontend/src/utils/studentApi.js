@@ -292,6 +292,32 @@ const studentApi = {
       data: { progress },
     });
   },
+
+  // ============ Quiz Student APIs ============
+  getCourseQuizzes: async (courseId) => {
+    return await apiClient(`/quizzes/course/${courseId}/published`, {
+      method: "GET",
+    });
+  },
+
+  getQuizForTaking: async (quizId) => {
+    return await apiClient(`/quizzes/${quizId}/take`, {
+      method: "GET",
+    });
+  },
+
+  submitQuiz: async (quizId, answers) => {
+    return await apiClient(`/quizzes/${quizId}/submit`, {
+      method: "POST",
+      data: { answers },
+    });
+  },
+
+  getMyQuizResult: async (quizId) => {
+    return await apiClient(`/quizzes/${quizId}/my-result`, {
+      method: "GET",
+    });
+  },
 };
 
 export default studentApi;

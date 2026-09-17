@@ -437,6 +437,13 @@ const facultyApi = {
     return `${getApiBaseUrl()}/courses/documents/${documentId}/download`;
   },
 
+  getMyDocuments: async (params = {}) => {
+    return await apiClient("/documents/my-documents", {
+      method: "GET",
+      params,
+    });
+  },
+
   // ============ Analytics ============
 
   /**
@@ -499,6 +506,85 @@ const facultyApi = {
    */
   getCourseAnalyticsDetails: async () => {
     return await apiClient("/courses/analytics/details", {
+      method: "GET",
+    });
+  },
+
+  // ============ Quiz Management ============
+  createQuiz: async (data) => {
+    return await apiClient("/quizzes", {
+      method: "POST",
+      data,
+    });
+  },
+
+  generateQuizWithAI: async (data) => {
+    return await apiClient("/quizzes/generate", {
+      method: "POST",
+      data,
+    });
+  },
+
+  getCourseQuizzes: async (courseId, params = {}) => {
+    return await apiClient(`/quizzes/course/${courseId}`, {
+      method: "GET",
+      params,
+    });
+  },
+
+  getQuiz: async (quizId) => {
+    return await apiClient(`/quizzes/${quizId}`, {
+      method: "GET",
+    });
+  },
+
+  updateQuiz: async (quizId, data) => {
+    return await apiClient(`/quizzes/${quizId}`, {
+      method: "PATCH",
+      data,
+    });
+  },
+
+  publishQuiz: async (quizId) => {
+    return await apiClient(`/quizzes/${quizId}/publish`, {
+      method: "POST",
+    });
+  },
+
+  archiveQuiz: async (quizId) => {
+    return await apiClient(`/quizzes/${quizId}/archive`, {
+      method: "POST",
+    });
+  },
+
+  deleteQuiz: async (quizId) => {
+    return await apiClient(`/quizzes/${quizId}`, {
+      method: "DELETE",
+    });
+  },
+
+  addQuestion: async (quizId, data) => {
+    return await apiClient(`/quizzes/${quizId}/questions`, {
+      method: "POST",
+      data,
+    });
+  },
+
+  updateQuestion: async (questionId, data) => {
+    return await apiClient(`/quizzes/questions/${questionId}`, {
+      method: "PATCH",
+      data,
+    });
+  },
+
+  deleteQuestion: async (questionId) => {
+    return await apiClient(`/quizzes/questions/${questionId}`, {
+      method: "DELETE",
+    });
+  },
+
+  getQuizSubmissions: async (quizId) => {
+    return await apiClient(`/quizzes/${quizId}/submissions`, {
       method: "GET",
     });
   },

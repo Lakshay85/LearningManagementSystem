@@ -50,6 +50,11 @@ class CourseStatus(str, Enum):
     PUBLISHED = 'published'
     ARCHIVED = 'archived'
 
+class QuizStatus(str, Enum):
+    DRAFT = 'draft'
+    PUBLISHED = 'published'
+    ARCHIVED = 'archived'
+
 class CourseVisibility(str, Enum):
     PUBLIC = 'public'
     PRIVATE = 'private'

@@ -18,6 +18,7 @@ import {
   ChevronRight,
   List,
   ListCollapse,
+  ClipboardCheck,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 
@@ -52,6 +53,7 @@ const FacultySidebar = ({ activeTab, setActiveTab }) => {
     { icon: Upload, label: "Upload Video", id: "upload" },
     { icon: Video, label: "My Videos", id: "videos" },
     { icon: BookOpen, label: "Courses", id: "courses" },
+    { icon: ClipboardCheck, label: "Quizzes", id: "quizzes" },
     { icon: Users, label: "Students", id: "students" },
     { icon: BarChart3, label: "Analytics", id: "analytics" },
   ];

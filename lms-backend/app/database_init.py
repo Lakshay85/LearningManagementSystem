@@ -39,6 +39,16 @@ CREATE INDEX IF NOT EXISTS chat_sessions_active_idx ON chat_sessions(is_active, 
 -- Chat messages indexes
 CREATE INDEX IF NOT EXISTS chat_messages_session_id_idx ON chat_messages(session_id);
 CREATE INDEX IF NOT EXISTS chat_messages_created_at_idx ON chat_messages(session_id, created_at);
+
+-- Quiz indexes and constraints
+CREATE INDEX IF NOT EXISTS quizzes_course_id_idx ON quizzes("courseId");
+CREATE INDEX IF NOT EXISTS quizzes_status_idx ON quizzes(status);
+CREATE INDEX IF NOT EXISTS quiz_questions_quiz_id_idx ON quiz_questions("quizId");
+CREATE INDEX IF NOT EXISTS quiz_submissions_quiz_student_idx ON quiz_submissions("quizId", "studentId");
+
+-- Course contents quiz column migration
+ALTER TABLE course_contents ADD COLUMN IF NOT EXISTS "quizId" UUID REFERENCES quizzes(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS course_contents_quiz_id_idx ON course_contents("quizId");
 """
 
 async def init_database():

@@ -506,7 +506,12 @@ class CourseService:
         max_order_res = await db.execute(order_stmt)
         max_order = max_order_res.scalar() or 0
 
-        content_type = ContentType.VIDEO if dto.videoId else ContentType.TEXT
+        if getattr(dto, 'quizId', None):
+            content_type = ContentType.QUIZ
+        elif dto.videoId:
+            content_type = ContentType.VIDEO
+        else:
+            content_type = ContentType.TEXT
 
         content = CourseContent(
             title=dto.title,
@@ -519,6 +524,7 @@ class CourseService:
             isRequired=dto.isRequired if dto.isRequired is not None else False,
             estimatedMinutes=dto.estimatedMinutes,
             videoId=UUID(dto.videoId) if dto.videoId else None,
+            quizId=UUID(dto.quizId) if getattr(dto, 'quizId', None) else None,
             textContent=dto.textContent
         )
 
@@ -910,7 +916,8 @@ class CourseService:
             .options(
                 selectinload(Course.instructor),
                 selectinload(Course.sections).selectinload(CourseSection.contents).selectinload(CourseContent.video),
-                selectinload(Course.sections).selectinload(CourseSection.contents).selectinload(CourseContent.document)
+                selectinload(Course.sections).selectinload(CourseSection.contents).selectinload(CourseContent.document),
+                selectinload(Course.sections).selectinload(CourseSection.contents).selectinload(CourseContent.quiz)
             )
         )
         result = await db.execute(stmt)

@@ -15,11 +15,16 @@ import Analytics from "./analytics/Analytics";
 import Settings from "./settings/Settings";
 import NotificationSection from "../../components/NotificationSection";
 import { applyThemeFonts } from "./settings/themeUtils";
+import QuizManager from "./quiz/QuizManager";
+import QuizBuilder from "./quiz/QuizBuilder";
+import QuizSubmissions from "./quiz/QuizSubmissions";
 
 function FacultyDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [editingCourse, setEditingCourse] = useState(null);
+  const [editingQuizId, setEditingQuizId] = useState(null);
+  const [viewingQuizId, setViewingQuizId] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("faculty-theme") || "default");
 
@@ -53,6 +58,29 @@ function FacultyDashboard() {
         return <VideoUpload />;
       case "videos":
         return <MyVideos setActiveTab={setActiveTab} />;
+      case "quizzes":
+        return (
+          <QuizManager
+            setActiveTab={setActiveTab}
+            setEditingQuizId={setEditingQuizId}
+            setViewingQuizId={setViewingQuizId}
+          />
+        );
+      case "quiz-builder":
+        return (
+          <QuizBuilder
+            quizId={editingQuizId}
+            setActiveTab={setActiveTab}
+            setViewingQuizId={setViewingQuizId}
+          />
+        );
+      case "quiz-submissions":
+        return (
+          <QuizSubmissions
+            quizId={viewingQuizId}
+            setActiveTab={setActiveTab}
+          />
+        );
       case "courses":
         return (
           <MyCourses

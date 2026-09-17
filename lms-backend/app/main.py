@@ -23,6 +23,7 @@ from app.notifications.router import router as notifications_router
 from app.health.router import router as health_router
 from app.messaging.service import messaging_service
 from app.rag import rag_router, ingest_router, rag_service
+from app.quiz.router import router as quiz_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -72,6 +73,7 @@ app.include_router(notifications_router)
 app.include_router(health_router)
 app.include_router(rag_router)
 app.include_router(ingest_router)
+app.include_router(quiz_router)
 
 @app.get("/")
 def read_root():

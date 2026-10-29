@@ -45,29 +45,52 @@ class GroqLLMProvider:
 
     async def generate(self, prompt: str, options: dict = None) -> LLMResponse:
         opts = options or {}
-        try:
-            chat_completion = await self.client.chat.completions.create(
-                model=opts.get("model") or self.model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=opts.get("temperature", self.temperature),
-                max_tokens=opts.get("maxTokens", self.max_tokens)
-            )
-            choice = chat_completion.choices[0]
-            usage = None
-            if chat_completion.usage:
-                usage = TokenUsage(
-                    prompt_tokens=chat_completion.usage.prompt_tokens,
-                    completion_tokens=chat_completion.usage.completion_tokens,
-                    total_tokens=chat_completion.usage.total_tokens
+        model = opts.get("model") or self.model
+        max_tokens = opts.get("maxTokens", self.max_tokens)
+        
+        # qwen/qwen3.8-27b has a hard limit of 1000 output tokens per minute on Groq
+        if "qwen" in model.lower() and max_tokens > 1000:
+            max_tokens = 1000
+
+        fallback_models = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
+        models_to_try = [model] + [m for m in fallback_models if m != model]
+
+        last_error = None
+        for current_model in models_to_try:
+            current_max_tokens = 1000 if ("qwen" in current_model.lower() and max_tokens > 1000) else max_tokens
+            try:
+                chat_completion = await self.client.chat.completions.create(
+                    model=current_model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=opts.get("temperature", self.temperature),
+                    max_tokens=current_max_tokens
                 )
-            return LLMResponse(
-                content=choice.message.content or "",
-                usage=usage,
-                finish_reason=choice.finish_reason
-            )
-        except Exception as e:
-            print(f"Groq generation error: {str(e)}")
-            raise Exception(f"Groq generation failed: {str(e)}")
+                choice = chat_completion.choices[0]
+                usage = None
+                if chat_completion.usage:
+                    usage = TokenUsage(
+                        prompt_tokens=chat_completion.usage.prompt_tokens,
+                        completion_tokens=chat_completion.usage.completion_tokens,
+                        total_tokens=chat_completion.usage.total_tokens
+                    )
+                return LLMResponse(
+                    content=choice.message.content or "",
+                    usage=usage,
+                    finish_reason=choice.finish_reason
+                )
+            except Exception as e:
+                err_str = str(e)
+                last_error = e
+                # If rate limit or token limit exceeded, try fallback model
+                if "429" in err_str or "rate_limit" in err_str.lower() or "limit" in err_str.lower():
+                    print(f"Groq model {current_model} rate limited or exceeded limit, trying fallback...")
+                    continue
+                else:
+                    print(f"Groq generation error with {current_model}: {err_str}")
+                    break
+
+        print(f"All Groq models failed. Last error: {str(last_error)}")
+        raise Exception(f"Groq generation failed: {str(last_error)}")
 
     async def generate_stream(self, prompt: str, options: dict = None) -> AsyncGenerator[StreamChunk, None]:
         opts = options or {}

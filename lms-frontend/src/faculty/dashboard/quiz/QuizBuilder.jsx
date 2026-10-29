@@ -21,6 +21,7 @@ import facultyApi from "../../../utils/facultyApi";
 import QuestionEditor from "./QuestionEditor";
 import QuizAIGenerator from "./QuizAIGenerator";
 import QuizPreview from "./QuizPreview";
+import ConfirmationModal from "../../../components/common/ConfirmationModal";
 
 export default function QuizBuilder({ quizId, setActiveTab, setViewingQuizId }) {
   const [quiz, setQuiz] = useState(null);
@@ -40,6 +41,7 @@ export default function QuizBuilder({ quizId, setActiveTab, setViewingQuizId }) 
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [isQuestionEditorOpen, setIsQuestionEditorOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   // Fetch quiz details
   const fetchQuiz = async () => {
@@ -128,14 +130,15 @@ export default function QuizBuilder({ quizId, setActiveTab, setViewingQuizId }) 
   };
 
   // Handle Question Delete
-  const handleDeleteQuestion = async (questionId) => {
-    if (!window.confirm("Are you sure you want to delete this question?")) return;
-    try {
-      await facultyApi.deleteQuestion(questionId);
-      fetchQuiz();
-    } catch (err) {
-      alert(err?.response?.data?.detail || "Failed to delete question");
-    }
+  const handleDeleteQuestion = (questionId) => {
+    setConfirmAction({
+      type: "deleteQuestion",
+      id: questionId,
+      title: "Delete Question",
+      message: "Are you sure you want to delete this question?",
+      confirmText: "Delete",
+      isDanger: true
+    });
   };
 
   // Handle Question Reordering (Move Up / Down)
@@ -159,43 +162,53 @@ export default function QuizBuilder({ quizId, setActiveTab, setViewingQuizId }) 
   };
 
   // Handle Publish
-  const handlePublish = async () => {
+  const handlePublish = () => {
     if (!quiz.questions || quiz.questions.length === 0) {
       alert("Please add at least one question before publishing.");
       return;
     }
-    if (
-      !window.confirm(
-        "Publish this quiz? Enrolled students will immediately be able to view and take it."
-      )
-    )
-      return;
-
-    try {
-      setActionLoading(true);
-      await facultyApi.publishQuiz(quizId);
-      setSuccessMsg("Quiz published successfully! Students can now take it.");
-      setTimeout(() => setSuccessMsg(""), 4000);
-      fetchQuiz();
-    } catch (err) {
-      alert(err?.response?.data?.detail || "Failed to publish quiz");
-    } finally {
-      setActionLoading(false);
-    }
+    setConfirmAction({
+      type: "publish",
+      title: "Publish Quiz",
+      message: "Publish this quiz? Enrolled students will immediately be able to view and take it.",
+      confirmText: "Publish",
+      isDanger: false
+    });
   };
 
   // Handle Archive
-  const handleArchive = async () => {
-    if (!window.confirm("Archive this quiz? It will no longer accept student submissions."))
-      return;
+  const handleArchive = () => {
+    setConfirmAction({
+      type: "archive",
+      title: "Archive Quiz",
+      message: "Archive this quiz? It will no longer accept student submissions.",
+      confirmText: "Archive",
+      isDanger: false
+    });
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
     try {
-      setActionLoading(true);
-      await facultyApi.archiveQuiz(quizId);
-      fetchQuiz();
+      if (confirmAction.type === "deleteQuestion") {
+        await facultyApi.deleteQuestion(confirmAction.id);
+        fetchQuiz();
+      } else if (confirmAction.type === "publish") {
+        setActionLoading(true);
+        await facultyApi.publishQuiz(quizId);
+        setSuccessMsg("Quiz published successfully! Students can now take it.");
+        setTimeout(() => setSuccessMsg(""), 4000);
+        fetchQuiz();
+      } else if (confirmAction.type === "archive") {
+        setActionLoading(true);
+        await facultyApi.archiveQuiz(quizId);
+        fetchQuiz();
+      }
     } catch (err) {
-      alert(err?.response?.data?.detail || "Failed to archive quiz");
+      alert(err?.response?.data?.detail || `Failed to ${confirmAction.type}`);
     } finally {
       setActionLoading(false);
+      setConfirmAction(null);
     }
   };
 
@@ -536,6 +549,17 @@ export default function QuizBuilder({ quizId, setActiveTab, setViewingQuizId }) 
         }}
         initialCourseId={quiz?.courseId}
         courses={quiz?.course ? [quiz.course] : []}
+      />
+
+      <ConfirmationModal
+        isOpen={!!confirmAction}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={executeConfirmAction}
+        title={confirmAction?.title || "Confirm"}
+        message={confirmAction?.message || "Are you sure?"}
+        confirmText={confirmAction?.confirmText || "Confirm"}
+        cancelText="Cancel"
+        isDanger={confirmAction?.isDanger || false}
       />
     </div>
   );

@@ -129,11 +129,14 @@ JSON Format:
 """
 
         try:
+            # Each question with 4 options + explanation needs ~200-250 tokens
+            token_budget = max(3000, num_questions * 250)
             response = await self.llm_manager.generate(prompt, {
-                "maxTokens": min(4096, max(1500, num_questions * 250)),
+                "maxTokens": token_budget,
                 "temperature": 0.4
             })
             raw_text = response.content.strip()
+            logger.info(f"AI response length: {len(raw_text)} chars")
             
             # Extract JSON block
             parsed_questions = self._parse_json_response(raw_text)
@@ -184,6 +187,7 @@ JSON Format:
             if not validated:
                 raise ValueError("Failed to parse valid questions from AI response")
 
+            logger.info(f"Successfully parsed {len(validated)} questions")
             return validated[:num_questions]
 
         except Exception as e:
@@ -191,33 +195,86 @@ JSON Format:
             raise e
 
     def _parse_json_response(self, text: str) -> List[Dict[str, Any]]:
-        """Safely extract and parse JSON array from LLM response text."""
-        # Clean markdown code blocks
-        clean_text = re.sub(r'```(?:json)?', '', text).strip()
+        """Robustly extract and parse JSON array from LLM response text.
         
-        # Look for [ ... ]
-        start = clean_text.find('[')
-        end = clean_text.rfind(']')
-        if start != -1 and end != -1 and end > start:
-            clean_text = clean_text[start:end+1]
-        
-        try:
-            data = json.loads(clean_text)
-            if isinstance(data, list):
-                return data
-            elif isinstance(data, dict) and "questions" in data:
-                return data["questions"]
-        except Exception:
-            pass
+        Handles: markdown fences, truncated responses, wrapper objects,
+        chatty preambles, and malformed trailing commas.
+        """
+        # ── Step 1: Strip markdown code fences ──
+        clean = re.sub(r'```(?:json)?\s*', '', text).strip()
+        clean = clean.rstrip('`').strip()
 
-        # Secondary regex-based attempt
-        match = re.search(r'\[.*\]', text, re.DOTALL)
-        if match:
+        # ── Step 2: Try direct parse (ideal case) ──
+        for candidate in [clean, text.strip()]:
             try:
-                return json.loads(match.group(0))
-            except Exception:
+                data = json.loads(candidate)
+                if isinstance(data, list):
+                    return data
+                if isinstance(data, dict) and "questions" in data:
+                    return data["questions"]
+            except (json.JSONDecodeError, ValueError):
                 pass
-                
-        raise ValueError(f"Could not parse valid JSON array from AI response: {text[:200]}...")
+
+        # ── Step 3: Extract bracket-delimited JSON array ──
+        start = clean.find('[')
+        if start != -1:
+            end = clean.rfind(']')
+            if end > start:
+                fragment = clean[start:end + 1]
+                try:
+                    data = json.loads(fragment)
+                    if isinstance(data, list):
+                        return data
+                except (json.JSONDecodeError, ValueError):
+                    # Try fixing trailing commas before ]
+                    fixed = re.sub(r',\s*\]', ']', fragment)
+                    try:
+                        data = json.loads(fixed)
+                        if isinstance(data, list):
+                            return data
+                    except (json.JSONDecodeError, ValueError):
+                        pass
+
+            # ── Step 4: Handle TRUNCATED JSON (no closing ]) ──
+            # The LLM ran out of tokens mid-array. Try to salvage complete objects.
+            fragment = clean[start:]
+            # Find the last complete object by looking for the last '}' followed
+            # by optional whitespace/comma but NOT another '{'
+            last_brace = fragment.rfind('}')
+            if last_brace > 0:
+                # Try progressively shorter suffixes to find valid JSON
+                attempt = fragment[:last_brace + 1].rstrip().rstrip(',').strip()
+                if not attempt.endswith(']'):
+                    attempt += ']'
+                # Fix trailing commas
+                attempt = re.sub(r',\s*\]', ']', attempt)
+                try:
+                    data = json.loads(attempt)
+                    if isinstance(data, list):
+                        logger.warning(f"Recovered {len(data)} questions from truncated JSON response")
+                        return data
+                except (json.JSONDecodeError, ValueError):
+                    pass
+
+        # ── Step 5: Extract individual JSON objects via regex ──
+        # Last resort: find all {...} blocks that look like question objects
+        obj_pattern = re.compile(
+            r'\{[^{}]*"(?:questionText|question)"[^{}]*"(?:options)"[^{}]*\[.*?\][^{}]*\}',
+            re.DOTALL
+        )
+        objects = []
+        for m in obj_pattern.finditer(clean):
+            try:
+                obj = json.loads(m.group(0))
+                if isinstance(obj, dict):
+                    objects.append(obj)
+            except (json.JSONDecodeError, ValueError):
+                pass
+
+        if objects:
+            logger.warning(f"Recovered {len(objects)} questions via individual object extraction")
+            return objects
+
+        raise ValueError(f"Could not parse valid JSON array from AI response: {text[:300]}...")
 
 quiz_ai_generator = QuizAIGenerator()

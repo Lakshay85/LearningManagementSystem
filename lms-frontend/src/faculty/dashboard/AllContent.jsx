@@ -25,6 +25,7 @@ import {
 import VideoPlayerModal from "./VideoPlayerModal";
 import facultyApi from "../../utils/facultyApi";
 import CustomSelect from "../../components/common/CustomSelect";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 // Format file size
 const formatFileSize = (bytes) => {
@@ -255,6 +256,7 @@ const AllContent = ({ setActiveTab }) => {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   // Filter states
   const [fileTypeFilter, setFileTypeFilter] = useState("");
@@ -345,20 +347,23 @@ const AllContent = ({ setActiveTab }) => {
   };
 
   // Handle delete content
-  const handleDelete = async (content) => {
-    if (!confirm(`Are you sure you want to delete "${content.title}"?`)) {
-      return;
-    }
+  const handleDelete = (content) => {
+    setDeleteTarget(content);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      if (content.type === "video") {
-        await facultyApi.deleteVideo(content.id);
+      if (deleteTarget.type === "video") {
+        await facultyApi.deleteVideo(deleteTarget.id);
       } else {
-        await facultyApi.deleteContent(content.id);
+        await facultyApi.deleteContent(deleteTarget.id);
       }
-      setContents((prev) => prev.filter((c) => c.id !== content.id));
+      setContents((prev) => prev.filter((c) => c.id !== deleteTarget.id));
     } catch (err) {
       alert(err.message || "Failed to delete content");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -717,6 +722,18 @@ const AllContent = ({ setActiveTab }) => {
           onClose={() => setSelectedVideo(null)}
         />
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Content"
+        message={`Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDanger={true}
+      />
     </div>
   );
 };

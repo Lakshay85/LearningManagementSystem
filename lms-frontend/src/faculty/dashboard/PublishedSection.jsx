@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { Video, FileText, Loader2, AlertCircle } from "lucide-react";
 import facultyApi from "../../utils/facultyApi";
 import ContentList from "./ContentList";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 const PublishedSection = () => {
     const [activeTab, setActiveTab] = useState("videos"); // videos | documents
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [unpublishTarget, setUnpublishTarget] = useState(null);
 
     const fetchPublished = async () => {
         setLoading(true);
@@ -35,20 +37,25 @@ const PublishedSection = () => {
         fetchPublished();
     }, [activeTab]);
 
-    const handleUnpublish = async (item) => {
-        if (!window.confirm(`Are you sure you want to unpublish "${item.title}"?`)) return;
+    const handleUnpublish = (item) => {
+        setUnpublishTarget(item);
+    };
 
+    const handleConfirmUnpublish = async () => {
+        if (!unpublishTarget) return;
         try {
             if (activeTab === "videos") {
-                await facultyApi.updateVideoVisibility(item.id, "private");
+                await facultyApi.updateVideoVisibility(unpublishTarget.id, "private");
             } else {
-                await facultyApi.updateDocument(item.id, { visibility: "private" });
+                await facultyApi.updateDocument(unpublishTarget.id, { visibility: "private" });
             }
             // Refresh list
             fetchPublished();
         } catch (err) {
             console.error("Failed to unpublish:", err);
             alert("Failed to unpublish content");
+        } finally {
+            setUnpublishTarget(null);
         }
     };
 
@@ -111,6 +118,17 @@ const PublishedSection = () => {
                     actionLabel="Unpublish"
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={!!unpublishTarget}
+                onClose={() => setUnpublishTarget(null)}
+                onConfirm={handleConfirmUnpublish}
+                title="Unpublish Content"
+                message={`Are you sure you want to unpublish "${unpublishTarget?.title}"?`}
+                confirmText="Unpublish"
+                cancelText="Cancel"
+                isDanger={false}
+            />
         </div>
     );
 };

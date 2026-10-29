@@ -1,24 +1,22 @@
 import { useState } from "react";
 import authApi from "../../../utils/authApi";
+import ConfirmationModal from "../../../components/common/ConfirmationModal";
 
 const DangerZone = () => {
     const [deleteConfirmation, setDeleteConfirmation] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-    const handleDeleteAccount = async () => {
+    const handleDeleteClick = () => {
         if (deleteConfirmation !== "DELETE") {
             alert("Please type 'DELETE' to confirm account deletion");
             return;
         }
+        setIsConfirmOpen(true);
+    };
 
-        if (
-            !window.confirm(
-                "Are you absolutely sure you want to permanently delete your account? This action cannot be undone."
-            )
-        ) {
-            return;
-        }
-
+    const handleConfirmDelete = async () => {
+        setIsConfirmOpen(false);
         setLoading(true);
         try {
             await authApi.deleteAccount();
@@ -60,7 +58,7 @@ const DangerZone = () => {
                     </div>
 
                     <button
-                        onClick={handleDeleteAccount}
+                        onClick={handleDeleteClick}
                         disabled={loading || deleteConfirmation !== "DELETE"}
                         className="w-full px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
@@ -68,6 +66,17 @@ const DangerZone = () => {
                     </button>
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={isConfirmOpen}
+                onClose={() => setIsConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Account"
+                message="Are you absolutely sure you want to permanently delete your account? This action cannot be undone."
+                confirmText="Delete Account"
+                cancelText="Cancel"
+                isDanger={true}
+            />
         </div>
     );
 };

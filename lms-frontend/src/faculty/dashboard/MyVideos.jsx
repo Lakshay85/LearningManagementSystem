@@ -22,6 +22,7 @@ import {
 import VideoPlayerModal from "./VideoPlayerModal";
 import facultyApi from "../../utils/facultyApi";
 import CustomSelect from "../../components/common/CustomSelect";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 // Format file size
 const formatFileSize = (bytes) => {
@@ -233,6 +234,7 @@ const MyVideos = ({ setActiveTab }) => {
     totalPages: 0,
   });
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [deleteTargetVideo, setDeleteTargetVideo] = useState(null);
 
   // Fetch videos
   const fetchVideos = useCallback(async () => {
@@ -294,17 +296,20 @@ const MyVideos = ({ setActiveTab }) => {
   };
 
   // Handle delete video
-  const handleDelete = async (video) => {
-    if (!confirm(`Are you sure you want to delete "${video.title}"?`)) {
-      return;
-    }
+  const handleDelete = (video) => {
+    setDeleteTargetVideo(video);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetVideo) return;
     try {
-      await facultyApi.deleteVideo(video.id);
+      await facultyApi.deleteVideo(deleteTargetVideo.id);
       // Remove from list
-      setVideos((prev) => prev.filter((v) => v.id !== video.id));
+      setVideos((prev) => prev.filter((v) => v.id !== deleteTargetVideo.id));
     } catch (err) {
       alert(err.message || "Failed to delete video");
+    } finally {
+      setDeleteTargetVideo(null);
     }
   };
 
@@ -519,6 +524,18 @@ const MyVideos = ({ setActiveTab }) => {
           onClose={() => setSelectedVideo(null)}
         />
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={!!deleteTargetVideo}
+        onClose={() => setDeleteTargetVideo(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Video"
+        message={`Are you sure you want to delete "${deleteTargetVideo?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDanger={true}
+      />
     </div>
   );
 };

@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { Video, FileText, Loader2, AlertCircle } from "lucide-react";
 import facultyApi from "../../utils/facultyApi";
 import ContentList from "./ContentList";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 const DraftsSection = () => {
     const [activeTab, setActiveTab] = useState("videos"); // videos | documents
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [publishTarget, setPublishTarget] = useState(null);
 
     const fetchDrafts = async () => {
         setLoading(true);
@@ -37,20 +39,25 @@ const DraftsSection = () => {
         fetchDrafts();
     }, [activeTab]);
 
-    const handlePublish = async (item) => {
-        if (!window.confirm(`Are you sure you want to publish "${item.title}"?`)) return;
+    const handlePublish = (item) => {
+        setPublishTarget(item);
+    };
 
+    const handleConfirmPublish = async () => {
+        if (!publishTarget) return;
         try {
             if (activeTab === "videos") {
-                await facultyApi.updateVideoVisibility(item.id, "public");
+                await facultyApi.updateVideoVisibility(publishTarget.id, "public");
             } else {
-                await facultyApi.updateDocument(item.id, { visibility: "public" });
+                await facultyApi.updateDocument(publishTarget.id, { visibility: "public" });
             }
             // Refresh list
             fetchDrafts();
         } catch (err) {
             console.error("Failed to publish:", err);
             alert("Failed to publish content");
+        } finally {
+            setPublishTarget(null);
         }
     };
 
@@ -113,6 +120,17 @@ const DraftsSection = () => {
                     actionLabel="Publish"
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={!!publishTarget}
+                onClose={() => setPublishTarget(null)}
+                onConfirm={handleConfirmPublish}
+                title="Publish Content"
+                message={`Are you sure you want to publish "${publishTarget?.title}"?`}
+                confirmText="Publish"
+                cancelText="Cancel"
+                isDanger={false}
+            />
         </div>
     );
 };

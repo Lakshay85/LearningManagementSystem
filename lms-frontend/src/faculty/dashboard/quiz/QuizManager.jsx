@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ConfirmationModal from "../../../components/common/ConfirmationModal";
 import {
   HelpCircle,
   Plus,
@@ -39,6 +40,7 @@ export default function QuizManager({ setActiveTab, setEditingQuizId, setViewing
   const [newQuizDesc, setNewQuizDesc] = useState("");
   const [creatingBlank, setCreatingBlank] = useState(false);
   const [activeMenuQuizId, setActiveMenuQuizId] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   // 1. Fetch faculty courses
   useEffect(() => {
@@ -119,24 +121,41 @@ export default function QuizManager({ setActiveTab, setEditingQuizId, setViewing
     }
   };
 
-  const handleArchiveQuiz = async (quizId) => {
-    if (!window.confirm("Archive this quiz?")) return;
-    try {
-      await facultyApi.archiveQuiz(quizId);
-      fetchQuizzes(selectedCourseId);
-    } catch (err) {
-      alert(err?.response?.data?.detail || "Failed to archive quiz");
-    }
+  const handleArchiveQuiz = (quizId) => {
+    setConfirmAction({
+      type: "archive",
+      quizId,
+      title: "Archive Quiz",
+      message: "Archive this quiz? It will no longer accept student submissions.",
+      confirmText: "Archive",
+      isDanger: false
+    });
   };
 
-  const handleDeleteQuiz = async (quizId) => {
-    if (!window.confirm("Are you sure you want to delete this quiz? This action cannot be undone."))
-      return;
+  const handleDeleteQuiz = (quizId) => {
+    setConfirmAction({
+      type: "delete",
+      quizId,
+      title: "Delete Quiz",
+      message: "Are you sure you want to delete this quiz? This action cannot be undone.",
+      confirmText: "Delete",
+      isDanger: true
+    });
+  };
+
+  const executeConfirmAction = async () => {
+    if (!confirmAction) return;
     try {
-      await facultyApi.deleteQuiz(quizId);
+      if (confirmAction.type === "delete") {
+        await facultyApi.deleteQuiz(confirmAction.quizId);
+      } else if (confirmAction.type === "archive") {
+        await facultyApi.archiveQuiz(confirmAction.quizId);
+      }
       fetchQuizzes(selectedCourseId);
     } catch (err) {
-      alert(err?.response?.data?.detail || "Failed to delete quiz");
+      alert(err?.response?.data?.detail || `Failed to ${confirmAction.type} quiz`);
+    } finally {
+      setConfirmAction(null);
     }
   };
 
@@ -466,6 +485,17 @@ export default function QuizManager({ setActiveTab, setEditingQuizId, setViewing
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={!!confirmAction}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={executeConfirmAction}
+        title={confirmAction?.title || "Confirm"}
+        message={confirmAction?.message || "Are you sure?"}
+        confirmText={confirmAction?.confirmText || "Confirm"}
+        cancelText="Cancel"
+        isDanger={confirmAction?.isDanger || false}
+      />
     </div>
   );
 }

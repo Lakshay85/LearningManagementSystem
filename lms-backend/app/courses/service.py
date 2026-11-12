@@ -20,6 +20,8 @@ from app.messaging.events import (
 )
 from app.rag.service import rag_service
 from app.rag.dto import IngestFileDto
+from app.payments.pricing import is_paid_course
+from app.payments.service import has_paid_order
 
 class CourseService:
     def generate_slug(self, title: str) -> str:
@@ -795,7 +797,8 @@ class CourseService:
         file_path = await storage_service.download(document.storagePath)
         return document, file_path
 
-    async def enroll_in_course(self, db: AsyncSession, course_id: str, student_id: str) -> CourseEnrollment:
+    async def enroll_in_course(self, db: AsyncSession, course_id: str, student_id: str,
+                               payment_verified: bool = False) -> CourseEnrollment:
         try:
             course_uuid = UUID(course_id)
             student_uuid = UUID(student_id)
@@ -805,6 +808,11 @@ class CourseService:
         course = await db.get(Course, course_uuid)
         if not course or course.status != CourseStatus.PUBLISHED:
             raise HTTPException(status_code=404, detail="Course not found or not available for enrollment")
+
+        # Paid courses require a verified payment (set by the payments flow) or a prior paid order
+        if is_paid_course(course) and not payment_verified:
+            if not await has_paid_order(db, student_id, course_id):
+                raise HTTPException(status_code=402, detail="Payment required to enroll in this course")
 
         # Check existing enrollment
         stmt = select(CourseEnrollment).where(

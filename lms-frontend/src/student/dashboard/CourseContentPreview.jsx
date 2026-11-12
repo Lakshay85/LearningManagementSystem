@@ -19,6 +19,7 @@ import {
   Star,
 } from "lucide-react";
 import studentApi from "../../utils/studentApi";
+import { payForCourse } from "../../utils/paymentApi";
 
 const ContentTypeIcon = ({ type, className = "w-5 h-5" }) => {
   switch (type) {
@@ -212,17 +213,28 @@ const CourseContentPreview = ({ course, onClose, onEnrollSuccess }) => {
     return `${mins} minutes`;
   };
 
+  const effectivePrice =
+    course.discountPrice != null && Number(course.discountPrice) < Number(course.price)
+      ? Number(course.discountPrice)
+      : Number(course.price || 0);
+  const isPaidCourse = !course.isFree && effectivePrice > 0;
+
   const handleEnroll = async () => {
     try {
       setEnrolling(true);
       setError(null);
-      await studentApi.enrollInCourse(course.id);
+      if (isPaidCourse) {
+        await payForCourse(course);
+      } else {
+        await studentApi.enrollInCourse(course.id);
+      }
       // Notify parent about successful enrollment
       if (onEnrollSuccess) {
         onEnrollSuccess(course);
       }
       onClose();
     } catch (err) {
+      if (err?.cancelled) return; // student closed the payment window
       console.error("Failed to enroll:", err);
       setError(err.message || "Failed to enroll in course. Please try again.");
     } finally {
@@ -406,7 +418,7 @@ const CourseContentPreview = ({ course, onClose, onEnrollSuccess }) => {
                 <span>
                   Price:{" "}
                   <span className="font-semibold text-gray-900">
-                    {course.currency || "INR"} {course.price || "N/A"}
+                    {course.currency || "INR"} {effectivePrice || "N/A"}
                   </span>
                 </span>
               )}
@@ -426,8 +438,10 @@ const CourseContentPreview = ({ course, onClose, onEnrollSuccess }) => {
                 {enrolling ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Enrolling...
+                    {isPaidCourse ? "Processing..." : "Enrolling..."}
                   </>
+                ) : isPaidCourse ? (
+                  `Pay ${course.currency || "INR"} ${effectivePrice} & Enroll`
                 ) : (
                   "Enroll Now"
                 )}

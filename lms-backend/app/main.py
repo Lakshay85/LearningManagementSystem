@@ -25,6 +25,7 @@ from app.messaging.service import messaging_service
 from app.rag import rag_router, ingest_router, rag_service
 from app.quiz.router import router as quiz_router
 from app.admin.router import router as admin_router
+from app.payments.router import router as payments_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -76,6 +77,7 @@ app.include_router(rag_router)
 app.include_router(ingest_router)
 app.include_router(quiz_router)
 app.include_router(admin_router)
+app.include_router(payments_router)
 
 @app.get("/")
 def read_root():
@@ -92,3 +94,4 @@ if __name__ == "__main__":
         port=settings.PORT,
         reload=True if settings.NODE_ENV == "development" else False
     )
+

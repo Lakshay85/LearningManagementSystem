@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     IMAGEKIT_PRIVATE_KEY: str = ""
     IMAGEKIT_URL_ENDPOINT: str = ""
 
+    # Razorpay (TEST mode only: keys must start with rzp_test_)
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
+    RAZORPAY_WEBHOOK_SECRET: str = ""
+
     # CORS
     ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://localhost:8080,http://localhost:5174"
 
@@ -95,3 +100,4 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
+
